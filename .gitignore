@@ -1,0 +1,8 @@
+*.class
+*.log
+
+target/
+lib_managed/
+src_managed/
+
+.idea
