@@ -7,7 +7,7 @@ import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
 
 import scala.collection.mutable.{LinkedHashMap => Map}
 
-class StanfordNLP(components: String, lv: AnyRef = "W", v: Boolean = false, conf: Map[String, String] = Map(
+class StanfordNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = Map(
   "tokenize.class" -> "PTBTokenizer",
   "pos.maxlen" -> "120",
   "parse.maxlen" -> "120"

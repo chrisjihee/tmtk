@@ -126,74 +126,71 @@ package object nlp {
     }
   }
 
-  private val text = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865. " +
-    "Lincoln led the United States through its Civil War -- its bloodiest war and its greatest moral, constitutional, and political crisis. " +
-    "In doing so, he preserved the Union, abolished slavery, strengthened the federal government, and modernized the economy."
+  private val text = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865." +
+    " Lincoln led the United States through its Civil War -- its bloodiest war and its greatest moral, constitutional, and political crisis." +
+    " In doing so, he preserved the Union, abolished slavery, strengthened the federal government, and modernized the economy."
 
   def testOpenNLP() = test(method, () => {
     val nlp = new OpenNLP("tokenize, ssplit, pos, chunk, parse, ner")
-    warn(" * Text Analysis")
     for (sentence <- nlp.detect(text)) {
       val tokens = nlp.tokenize(sentence)
-      warn(s"   + [   Tokenized] ${tokens.mkString(" ")}")
+      warn(s" + [   Tokenized] ${tokens.mkString(" ")}")
       val tags = nlp.tag(tokens)
       val postagged = tokens.zip(tags).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [POS-Tagged] ${postagged.mkString(" ")}")
+      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
       val recognized = nlp.recognize(tokens)
-      warn(s"     - [Recognized] $recognized")
+      warn(s"   - [Recognized] $recognized")
       val phchunked = nlp.chunkToString(tokens, tags)
-      warn(s"     - [Ph-Chunked] $phchunked")
+      warn(s"   - [Ph-Chunked] $phchunked")
       val lexparsed = nlp.parseToString(sentence)
-      warn(s"     - [Lex-Parsed] $lexparsed")
+      warn(s"   - [Lex-Parsed] $lexparsed")
     }
   })
 
   def testStanfordNLP() = test(method, () => {
     val nlp = new StanfordNLP("tokenize, ssplit, pos, lemma, ner, parse, depparse, dcoref")
-    warn(" * Text Analysis")
     for (sentence <- nlp.analyze(text).sentences) {
       val tokens = sentence.tokens.map(_.word)
-      warn(s"   + [   Tokenized] ${tokens.mkString(" ")}")
+      warn(s" + [   Tokenized] ${tokens.mkString(" ")}")
       val lemmas = sentence.tokens.map(_.lemma)
-      warn(s"     - [Lemmatized] ${lemmas.mkString(" ")}")
+      warn(s"   - [Lemmatized] ${lemmas.mkString(" ")}")
       val tags = sentence.tokens.map(_.tag)
       val postagged = tokens.zip(tags).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [POS-Tagged] ${postagged.mkString(" ")}")
+      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
       val ners = sentence.tokens.map(_.ner)
       val recognized = tokens.zip(ners).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [Recognized] ${recognized.mkString(" ")}")
+      warn(s"   - [Recognized] ${recognized.mkString(" ")}")
       val lexparsed = sentence.tree
-      warn(s"     - [Lex-Parsed] $lexparsed")
+      warn(s"   - [Lex-Parsed] $lexparsed")
       val depparsed = sentence.deps
       val deps = depparsed.toList.split("\n")
-      warn(s"     - [Dep-Parsed] ${deps.mkString(" / ")}")
-      warn(s"     - [Dep-Parsed] \n${depparsed.toString.trim}")
+      warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
+      warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
     }
   })
 
   def testClearNLP() = test(method, () => {
     val nlp = new ClearNLP("tokenize, ssplit, pos, lemma, dep, srl, ner")
-    warn(" * Text Analysis")
     for (sentence <- nlp.analyze(text)) {
       val tokens = sentence.map(_.getWordForm)
-      warn(s"   + [   Tokenized] ${tokens.mkString(" ")}")
+      warn(s" + [   Tokenized] ${tokens.mkString(" ")}")
       val lemmas = sentence.map(_.getLemma)
-      warn(s"     - [Lemmatized] ${lemmas.mkString(" ")}")
+      warn(s"   - [Lemmatized] ${lemmas.mkString(" ")}")
       val tags = sentence.map(_.getPOSTag)
       val postagged = tokens.zip(tags).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [POS-Tagged] ${postagged.mkString(" ")}")
+      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
       val ners = sentence.map(_.getNamedEntityTag).map(x => if (x != null) x else "X")
       val recognized = tokens.zip(ners).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [Recognized] ${recognized.mkString(" ")}")
+      warn(s"   - [Recognized] ${recognized.mkString(" ")}")
       val pbvs = sentence.map(_.getFeat("pb")).map(x => if (x != null) x else "X")
       val pbvtagged = tokens.zip(pbvs).map(x => s"${x._1}/${x._2}")
-      warn(s"     - [PBV-Tagged] ${pbvtagged.mkString(" ")}")
+      warn(s"   - [PBV-Tagged] ${pbvtagged.mkString(" ")}")
       val srls = sentence.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
-      warn(s"     - [SR-Labeled] ${srls.mkString(" / ")}")
+      warn(s"   - [SR-Labeled] ${srls.mkString(" / ")}")
       val deps = toTypedDependencies(sentence)
       val depparsed = toSemanticGraph(deps)
-      warn(s"     - [Dep-Parsed] ${deps.mkString(" / ")}")
-      warn(s"     - [Dep-Parsed] \n${depparsed.toString.trim}")
+      warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
+      warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
     }
   })
 }
