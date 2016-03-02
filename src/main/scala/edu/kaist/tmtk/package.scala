@@ -1,7 +1,8 @@
 package edu.kaist
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
-import java.net.URI
+import java.lang.Thread.sleep
+import java.net.{Socket => JSocket, URI}
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
@@ -9,8 +10,10 @@ import java.time.{Duration, Instant, LocalDateTime, ZoneId}
 
 import org.apache.log4j.Level.{DEBUG, ERROR, FATAL, INFO, TRACE, WARN}
 import org.apache.log4j.{Level, Logger}
+import scala.collection.JavaConversions.seqAsJavaList
 
 import scala.collection.mutable.ArrayBuffer
+import scala.tools.nsc.io.Socket
 
 package object tmtk {
 
@@ -157,6 +160,8 @@ package object tmtk {
     def asBoolean: Boolean = asBoolean()
   }
 
+  def toJavaList[A](a: A) = seqAsJavaList(Seq(a))
+
   def method: String = method(3)
 
   def method(lv: Int = 2): String = Thread.currentThread().getStackTrace()(lv).getMethodName
@@ -201,6 +206,12 @@ package object tmtk {
     val r = f()
     onAll()
     r
+  }
+
+  def pause[A](f: () => A, second: Int = 0) = {
+    if (second > 0)
+      sleep(second * 1000)
+    f()
   }
 
   private val logger = Logger.getLogger(getClass)
@@ -297,4 +308,13 @@ package object tmtk {
 
   def toItems(values: Array[String], sep: String = "=") =
     values.map(_.split(sep, 2)).filter(_.size >= 2).map(x => (x.head, x.last))
+
+  def connect(host: String, port: Int, second: Int = 0) = try {
+    pause(() => new Socket(new JSocket(host, port)), second)
+  } catch {
+    case e: Throwable => null
+  }
+
+  def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 10 #:: 20 #:: Stream(30)) =
+    seconds.map(connect(host, port, _)).dropWhile(_ == null).headOption.orNull
 }

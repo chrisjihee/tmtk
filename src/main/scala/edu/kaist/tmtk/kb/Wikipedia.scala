@@ -20,6 +20,4 @@ class Wikipedia(path: String, user: String, pswd: String, lang: String) {
   }
 
   def getPage(nid: Int) = w.getPage(nid)
-
-  def getPageIds = w.getPageIds().toStream.map(_.asInstanceOf[Int])
 }

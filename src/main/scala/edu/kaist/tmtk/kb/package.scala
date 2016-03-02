@@ -4,13 +4,14 @@ import de.tudarmstadt.ukp.wikipedia.api.Page
 import de.tudarmstadt.ukp.wikipedia.api.exception.{WikiPageNotFoundException, WikiTitleParsingException}
 
 package object kb {
-  private val removable_sections = ("See also;Notes and references;Notes;Footnotes;Citations;References;Bibliography;" +
-    "Further reading;External links;Sources;Sources/external links;" +
-    "참고문헌;참고 문헌;참고 자료;참조;주석과 참고 자료;관련 항목;관련 분야;바깥 고리;바깥고리;외부 고리;바깥링크;외부 연결;" +
-    "같이 보기;같이보기;같이 읽기;함께 보기;각주;주해;주석;읽어보기;읽을거리;출처").split(";")
-  private val removable_sections_regex = s"""(?is)==[= 	]*(${removable_sections.mkString("|")})[= 	]*==.*$$""".r
 
   implicit class PageOps(page: Page) {
+    private val removable_sections = ("See also;Notes and references;Notes;Footnotes;Citations;References;Bibliography;" +
+      "Further reading;External links;Sources;Sources/external links;" +
+      "참고문헌;참고 문헌;참고 자료;참조;주석과 참고 자료;관련 항목;관련 분야;바깥 고리;바깥고리;외부 고리;바깥링크;외부 연결;" +
+      "같이 보기;같이보기;같이 읽기;함께 보기;각주;주해;주석;읽어보기;읽을거리;출처").split(";")
+    private val removable_sections_regex = s"""(?is)==[= 	]*(${removable_sections.mkString("|")})[= 	]*==.*$$""".r
+
     def isRegular = try {
       !page.isDisambiguation && !page.isDiscussion && !page.isRedirect
     } catch {
@@ -101,4 +102,55 @@ package object kb {
     def sections: Iterable[(String, String)] = sections()
   }
 
+  def main(args: Array[String]) {
+    args.at(0, null) match {
+      case "WikipediaE" => testWikipediaE()
+      case "WikipediaK" => testWikipediaK()
+      case _ =>
+    }
+  }
+
+  def testWikipediaE() = test(method, () => {
+    val kb = new Wikipedia("143.248.48.105/enwiki", "admin", "admin1", "english")
+
+    warn("  + Pages by IDs")
+    for {
+      i <- Seq(12, 25, 39, 290, 303)
+      p = kb.getPage(i) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+
+    warn("  + Pages by titles")
+    for {
+      t <- "USA, UK, Korea, KAIST, Anarchist, Anarchists (disambiguation)".split(", ")
+      p = kb.getPage(t) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+  })
+
+  def testWikipediaK() = test(method, () => {
+    val kb = new Wikipedia("143.248.48.105/kowiki", "admin", "admin1", "korean")
+
+    warn("  + Pages by IDs")
+    for {
+      i <- Seq(5, 9, 10, 19, 20)
+      p = kb.getPage(i) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+
+    warn("  + Pages by titles")
+    for {
+      t <- "초월수, 대수적 수, KAIST, 카이스트, 한국과학기술원".split(", ")
+      p = kb.getPage(t) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+  })
 }

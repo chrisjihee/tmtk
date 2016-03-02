@@ -19,7 +19,7 @@ package object ie {
     val nlp = new OpenNLP("ssplit", "D")
     val ie = new OpenIE
     for (sentence <- nlp.detect(text)) {
-      warn(s" + [Sentence] $sentence")
+      warn(s" + [Raw Sentence] $sentence")
       for (extraction <- ie.extract(sentence))
         warn(s"   - [Extraction] $extraction")
     }

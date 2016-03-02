@@ -5,9 +5,8 @@ import edu.emory.clir.clearnlp.component.mode.srl.SRLConfiguration
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.{DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage.ENGLISH
-import edu.kaist.tmtk.{error, log, toInputStream}
+import edu.kaist.tmtk.{log, toInputStream}
 
-import scala.annotation.tailrec
 import scala.collection.JavaConversions.{iterableAsScalaIterable, seqAsJavaList}
 import scala.collection.mutable.{LinkedHashMap => Map}
 
@@ -67,24 +66,15 @@ class ClearNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] =
 
   def analyze(text: String): Iterable[DEPTree] = detect(text).map(analyze)
 
-  def analyze(toks: Iterable[String]): DEPTree = analyze(toTree(toks))
+  def analyze(toks: Iterable[String]): DEPTree = analyze(asTree(toks))
 
-  @tailrec
-  final def analyze(tree: DEPTree, limit: Int = 3, times: Int = 1): DEPTree = try {
+  def analyze(tree: DEPTree) = {
     for (annotator <- annotators)
       annotator.process(tree)
     tree
   }
-  catch {
-    case e: Throwable => if (times > limit) tree
-    else {
-      error(s"Thrown exception: ${e.getClass.getSimpleName}: ${e.getMessage}")
-      Thread.sleep(1000)
-      analyze(tree, times = times + 1)
-    }
-  }
 
-  private def toTree(toks: Iterable[String]) = {
+  private def asTree(toks: Iterable[String]) = {
     val tree = new DEPTree(toks.size)
     for ((tok, i) <- toks.zipWithIndex)
       tree.add(new DEPNode(i + 1, tok))

@@ -61,10 +61,47 @@ package object nlp {
       x.tokens.map(_.tag)
   }
 
+  implicit class ParsedSentOps(x: ParsedSent) {
+    def words =
+      x.word.toIterable.map(_.text)
+
+    def lemmas =
+      x.morp.toIterable.map(_.lemma)
+
+    def tags =
+      x.morp.toIterable.map(_.`type`)
+
+    def NEs =
+      x.NE.toIterable.map(x => x.text + "/" + x.`type`)
+
+    def deps =
+      x.dependency.toSeq
+  }
+
+  def toTypedDependencies(nodes: Seq[ParsedDep]) =
+    nodes.map(toTypedDependency(_, nodes)).filter(_ != null)
+
+  def toTypedDependency(node: ParsedDep, nodes: Seq[ParsedDep]) = if (node.head >= 0) {
+    val rel = GrammaticalRelation.valueOf(Language.Any, node.label)
+    val gov = toIndexedWord(nodes(node.head))
+    val dep = toIndexedWord(node)
+    new TypedDependency(rel, gov, dep)
+  } else null
+
+  def toIndexedWord(node: ParsedDep) = {
+    val word = new IndexedWord()
+    word.setIndex(node.id)
+    word.setValue(node.text)
+    word.setWord(node.text)
+    word.setTag("")
+    word.setLemma(node.text)
+    word
+  }
+
   private val COMMON_RELs = Map("root" -> ROOT, "dep" -> DEPENDENT, "gov" -> GOVERNOR)
 
   def toTypedDependencies(tree: DEPTree) =
-    tree.map(toTypedDependency).filter(x => x != null)
+    tree.map(toTypedDependency).filter(_ != null)
 
   def toTypedDependency(node: DEPNode): TypedDependency = if (node.hasHead) {
     val rel = Option(GrammaticalRelation.valueOf(node.getLabel, COMMON_RELs)).getOrElse(GrammaticalRelation.valueOf(Language.English, node.getLabel))
@@ -118,19 +155,22 @@ package object nlp {
   }
 
   def main(args: Array[String]) {
+    val textE = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865." +
+      " Lincoln led the United States through its Civil War -- its bloodiest war and its greatest moral, constitutional, and political crisis." +
+      " In doing so, he preserved the Union, abolished slavery, strengthened the federal government, and modernized the economy."
+    val textK = "조선 세종은 조선의 제4대 왕이다. 성은 이, 휘는 도, 본관은 전주, 자는 원정, 아명은 막동이다." +
+      " 세종은 묘호이며, 시호는 영문예무인성명효대왕이고, 명에서 받은 시호는 장헌이다. 존시를 합치면 세종장헌영문예무인성명효대왕이 된다." +
+      " 태종과 원경왕후의 셋째 아들이며, 비는 청천부원군 심온의 딸 소헌왕후 심씨이다."
     args.at(0, null) match {
-      case "OpenNLP" => testOpenNLP()
-      case "StanfordNLP" => testStanfordNLP()
-      case "ClearNLP" => testClearNLP()
+      case "OpenNLP" => testOpenNLP(textE)
+      case "StanfordNLP" => testStanfordNLP(textE)
+      case "ClearNLP" => testClearNLP(textE)
+      case "KoreanNLP" => testKoreanNLP(textK)
       case _ =>
     }
   }
 
-  private val text = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865." +
-    " Lincoln led the United States through its Civil War -- its bloodiest war and its greatest moral, constitutional, and political crisis." +
-    " In doing so, he preserved the Union, abolished slavery, strengthened the federal government, and modernized the economy."
-
-  def testOpenNLP() = test(method, () => {
+  def testOpenNLP(text: String) = test(method, () => {
     val nlp = new OpenNLP("tokenize, ssplit, pos, chunk, parse, ner")
     for (sentence <- nlp.detect(text)) {
       val tokens = nlp.tokenize(sentence)
@@ -147,7 +187,7 @@ package object nlp {
     }
   })
 
-  def testStanfordNLP() = test(method, () => {
+  def testStanfordNLP(text: String) = test(method, () => {
     val nlp = new StanfordNLP("tokenize, ssplit, pos, lemma, ner, parse, depparse, dcoref")
     for (sentence <- nlp.analyze(text).sentences) {
       val tokens = sentence.tokens.map(_.word)
@@ -169,7 +209,7 @@ package object nlp {
     }
   })
 
-  def testClearNLP() = test(method, () => {
+  def testClearNLP(text: String) = test(method, () => {
     val nlp = new ClearNLP("tokenize, ssplit, pos, lemma, dep, srl, ner")
     for (sentence <- nlp.analyze(text)) {
       val tokens = sentence.map(_.getWordForm)
@@ -188,6 +228,25 @@ package object nlp {
       val srls = sentence.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
       warn(s"   - [SR-Labeled] ${srls.mkString(" / ")}")
       val deps = toTypedDependencies(sentence)
+      val depparsed = toSemanticGraph(deps)
+      warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
+      warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
+    }
+  })
+
+  def testKoreanNLP(text: String) = test(method, () => {
+    val nlp = new KoreanNLP("143.248.48.105:30600")
+    for (sentence <- nlp.analyze(text).sentences) {
+      val words = sentence.words
+      warn(s" + [Raw Sentence] ${words.mkString(" ")}")
+      val lemmas = sentence.lemmas
+      warn(s"   - [Lemmatized] ${lemmas.mkString(" ")}")
+      val tags = sentence.tags
+      val postagged = lemmas.zip(tags).map(x => s"${x._1}/${x._2}")
+      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
+      val recognized = sentence.NEs
+      warn(s"   - [Recognized] ${recognized.mkString(" ")}")
+      val deps = toTypedDependencies(sentence.deps)
       val depparsed = toSemanticGraph(deps)
       warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
       warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
