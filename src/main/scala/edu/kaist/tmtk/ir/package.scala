@@ -10,10 +10,12 @@ package object ir {
 
   implicit class FieldOps(x: IndexableField) {
     def value =
-      Option(x).map(x => (x.numericValue, x.stringValue)).map { case (n, s) => if (n != null) n else s }.orNull
+      (for {
+        x <- Option(x)
+        (n, s) = (x.numericValue, x.stringValue)
+      } yield if (n != null) n else s).orNull
 
-    def item =
-      Option(x).map(x => (x.name, x.numericValue, x.stringValue)).map { case (k, n, s) => (k, if (n != null) n else s) }.orNull
+    def item = x.name -> x.value
   }
 
   implicit class DocumentOps(x: Document) {
