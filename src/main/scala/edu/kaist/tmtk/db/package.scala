@@ -28,9 +28,9 @@ package object db {
       warn(s"   -   one : $a1")
       val a2 = db.ones("SELECT name FROM samples WHERE i>=?", 2)
       warn(s"   -  ones : ${a2.mkString(", ")}")
-      val Array(i, n) = db.row("SELECT * FROM samples WHERE i=?", 1)
+      val List(i, n) = db.row("SELECT * FROM samples WHERE i=?", 1)
       warn(s"   -   row : $i->$n")
-      val a4 = for (Array(i, n) <- db.rows("SELECT * FROM samples WHERE i>=?", 2)) yield s"$i->$n"
+      val a4 = for (List(i, n) <- db.rows("SELECT * FROM samples WHERE i>=?", 2)) yield s"$i->$n"
       warn(s"   -  rows : ${a4.mkString(", ")}")
       val a5 = db.map("SELECT * FROM samples WHERE i=?", 1)
       warn(s"   -   map : $a5")

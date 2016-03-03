@@ -1,15 +1,17 @@
 package edu.kaist
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
+import java.io.{File, ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 import java.lang.Thread.sleep
 import java.net.{Socket => JSocket, URI}
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
+import java.security.AccessController
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, LocalDateTime, ZoneId}
 
 import org.apache.log4j.Level.{DEBUG, ERROR, FATAL, INFO, TRACE, WARN}
 import org.apache.log4j.{Level, Logger}
+import sun.security.action.GetPropertyAction
 import scala.collection.JavaConversions.seqAsJavaList
 
 import scala.collection.mutable.ArrayBuffer
@@ -302,6 +304,12 @@ package object tmtk {
       return u.toURI
     null
   }
+
+  def temp =
+    new File(AccessController.doPrivileged(new GetPropertyAction("java.io.tmpdir")))
+
+  def inTemp(child: String) =
+    new File(temp, child)
 
   def toInputStream(str: String) =
     new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
