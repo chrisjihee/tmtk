@@ -28,3 +28,18 @@ libraryDependencies += "de.tudarmstadt.ukp.wikipedia" % "de.tudarmstadt.ukp.wiki
 libraryDependencies += "org.apache.lucene" % "lucene-core" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-analyzers-common" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-queryparser" % "5.5.0"
+
+assemblyMergeStrategy in assembly := getStrategy
+Project.inConfig(Test)(baseAssemblySettings ++ Seq(assemblyMergeStrategy in assembly := getStrategy))
+def getStrategy(path: String) = path match {
+  case x if x.startsWith("META-INF") => MergeStrategy.discard
+  case x if x.equals("log4j.properties") => MergeStrategy.first
+  case x if x.matches(".+[.](class|xz)") => MergeStrategy.first
+  case PathList("javax", "servlet", _*) => MergeStrategy.first
+  case PathList("edu", "emory", "clir", _*) => MergeStrategy.first
+  case PathList("edu", "stanford", "nlp", _*) => MergeStrategy.first
+  case PathList("opennlp", _*) => MergeStrategy.first
+  case PathList("maltparser", _*) => MergeStrategy.first
+  case PathList(x@_*) if x.size > 1 && x.last.matches(".+[.](properties|xml|txt)") => MergeStrategy.first
+  case _ => MergeStrategy.discard
+}
