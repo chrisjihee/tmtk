@@ -2,6 +2,8 @@ organization := "edu.kaist"
 name := "tmtk"
 version := "1.0"
 scalaVersion := "2.10.6"
+scalacOptions += "-P:continuations:enable"
+autoCompilerPlugins := true
 
 libraryDependencies += compilerPlugin("org.scala-lang.plugins" % "continuations" % "2.10.6")
 libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.10.6"
