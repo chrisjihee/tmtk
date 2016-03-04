@@ -1,6 +1,6 @@
 package edu.kaist
 
-import java.io.{File, ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, PrintStream}
 import java.lang.Thread.sleep
 import java.net.{Socket => JSocket, URI}
 import java.nio.charset.StandardCharsets
@@ -8,12 +8,15 @@ import java.nio.file.Paths
 import java.security.AccessController
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, LocalDateTime, ZoneId}
+import java.util.concurrent.atomic.AtomicLong
 
+import edu.kaist.tmtk.db.MySQL
 import org.apache.log4j.Level.{DEBUG, ERROR, FATAL, INFO, TRACE, WARN}
 import org.apache.log4j.{Level, Logger}
 import sun.security.action.GetPropertyAction
-import scala.collection.JavaConversions.seqAsJavaList
 
+import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.concurrent.TrieMap
 import scala.collection.mutable.ArrayBuffer
 import scala.tools.nsc.io.Socket
 
@@ -272,18 +275,18 @@ package object tmtk {
     }
   }
 
-  val clocks = new ArrayBuffer[(String, Instant)]
+  val clocks = new TrieMap[String, Instant]
 
-  def init(name: String = method(3), lv: AnyRef = WARN, lg: Logger = logger) = {
-    clocks += ((name, Instant.now))
-    log(s"[INIT] $name", lv, lg)
+  def init(key: String = method(4), lv: AnyRef = WARN, lg: Logger = logger, marker: String = "[INIT]") = {
+    clocks += key -> Instant.now
+    log(s"$marker $key", lv, lg)
   }
 
-  def exit(post: String = "", lv: AnyRef = WARN, lg: Logger = logger) = {
-    if (clocks.nonEmpty) {
-      val (name, from) = clocks.last
-      log(s"[EXIT] $name in ${elapsed(from)}$post", lv, lg)
-      clocks.reduceToSize(clocks.length - 1)
+  def exit(key: String = method(4), post: String = "", lv: AnyRef = WARN, lg: Logger = logger, marker: String = "[EXIT]") = {
+    if (clocks.contains(key)) {
+      val from = clocks(key)
+      log(s"$marker $key in ${elapsed(from)}$post", lv, lg)
+      clocks -= key
     }
   }
 
@@ -292,7 +295,7 @@ package object tmtk {
     var r: Any = null
     if (f != null)
       r = f()
-    exit()
+    exit(name)
     r
   }
 
@@ -325,4 +328,79 @@ package object tmtk {
 
   def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 10 #:: 20 #:: Stream(30)) =
     seconds.map(connect(host, port, _)).dropWhile(_ == null).headOption.orNull
+
+  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0) = {
+    val (sleepTimeNext, sleepTimeLast) = (0, 0)
+    val (numInit, numDone) = (new AtomicLong(offset), new AtomicLong)
+    val jobs = new TrieMap[String, Thread]
+
+    for (d <- ds) {
+      if (multi <= 1)
+        handle1(d)
+      else
+        handle2(d)
+    }
+    while (jobs.nonEmpty)
+      Thread.sleep(sleepTimeLast)
+
+    def done = if (numDone.incrementAndGet % interval == 0) "W" else "D"
+    def name(n: Long) = "J%010d" format n
+    def str(ms: ArrayBuffer[String]) = if (ms.nonEmpty) s" / ${ms.mkString(" / ")}" else ""
+
+    def handle1(d: D, n: String = name(numInit.incrementAndGet)) {
+      val ms = new ArrayBuffer[String]
+      init(n, "D")
+      f(d, ms)
+      exit(n, str(ms), done)
+    }
+
+    def handle2(d: D, n: String = name(numInit.incrementAndGet)) {
+      val ms = new ArrayBuffer[String]
+      while (jobs.size >= multi)
+        Thread.sleep(sleepTimeNext)
+      jobs += n -> new Thread(new Runnable {
+        override def run(): Unit = {
+          init(n, "D")
+          f(d, ms)
+          exit(n, str(ms), done)
+          jobs -= n
+        }
+      })
+      jobs(n).start()
+    }
+  }
+
+  def main(args: Array[String]) {
+    args.at(0, null) match {
+      case "assign" => testAssign()
+      case _ =>
+    }
+  }
+
+  def testAssign() = test(method, () => {
+    val data = Stream.iterate(1)(x => x + 1).take(100)
+    val out = new MySQL("143.248.48.105/unit", "admin", "admin1", "assigner", "i int auto_increment, t timestamp default current_timestamp, data int, conf varchar(50), result int, primary key(i)")
+    val conf = new ArrayBuffer[String]
+
+    conf += "multi=1"
+    test("assign1", () => assign(data, square, multi = 1, interval = 20))
+    conf.clear
+
+    conf += "multi=2"
+    test("assign2", () => assign(data, square, multi = 2, interval = 20))
+    conf.clear
+
+    conf += "multi=5"
+    test("assign3", () => assign(data, square, multi = 5, interval = 20))
+    conf.clear
+
+    conf += "multi=10"
+    test("assign4", () => assign(data, square, multi = 10, interval = 20))
+    conf.clear
+
+    def square(d: Int, post: ArrayBuffer[String]) = {
+      val result = d * d
+      out.insert(Map("data" -> d, "conf" -> conf.mkString(" / "), "result" -> result))
+    }
+  })
 }
