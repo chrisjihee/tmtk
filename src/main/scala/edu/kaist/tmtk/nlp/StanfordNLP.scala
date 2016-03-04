@@ -29,3 +29,11 @@ class StanfordNLP(components: String, lv: AnyRef = "W", conf: Map[String, String
     annotation
   }
 }
+
+object StanfordNLP {
+  def apply(components: String) =
+    new StanfordNLP(components)
+
+  def apply(components: String, lv: AnyRef) =
+    new StanfordNLP(components, lv)
+}

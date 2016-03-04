@@ -1,5 +1,6 @@
 package edu.kaist.tmtk
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.IndexableField
 
@@ -37,7 +38,7 @@ package object ir {
   }
 
   def testLucene() = test(method, () => {
-    val ir = new Lucene(inTemp("test-index"))
+    val ir = new Lucene(inTemp("test-index"), new StandardAnalyzer)
     warn(s" + [IR] $ir")
     ir.clear()
     for (r <- Map("i" -> 1, "name" -> "A", "t_text" -> "Apple is good for health") :: Map("i" -> 2, "name" -> "B", "t_text" -> "Banana is good for heart") :: Map("i" -> 3, "name" -> "C", "t_text" -> "Carrot is good for eyesight") :: Nil)

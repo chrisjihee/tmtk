@@ -10,9 +10,9 @@ import opennlp.tools.postag.{POSModel, POSTaggerME}
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
 import opennlp.tools.tokenize.{TokenizerME, TokenizerModel}
 
-import scala.collection.mutable.{LinkedHashMap => Map}
+import scala.collection.immutable.ListMap
 
-class OpenNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = Map(
+class OpenNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = ListMap(
   "sent.model" -> "opennlp/en-sent.bin",
   "tok.model" -> "opennlp/en-token.bin",
   "pos.model" -> "opennlp/en-pos-maxent.bin",
@@ -112,4 +112,12 @@ class OpenNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = 
 
   def clearRecognizer() =
     recognizers.foreach(_.clearAdaptiveData)
+}
+
+object OpenNLP {
+  def apply(components: String) =
+    new OpenNLP(components)
+
+  def apply(components: String, lv: AnyRef) =
+    new OpenNLP(components, lv)
 }

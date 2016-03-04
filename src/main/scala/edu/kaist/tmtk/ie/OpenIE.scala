@@ -26,3 +26,8 @@ class OpenIE(lv: AnyRef = "W", conf: Map[String, String] = Map("dep.model" -> "m
       new Extraction(e.extraction.arg1.text, e.extraction.rel.text, e.extraction.arg2.text, e.extraction.attribution.map(_.text).orNull, e.extraction.enabler.map(_.text).orNull, confidence(e))
   }
 }
+
+object OpenIE {
+  def apply(lv: AnyRef) =
+    new OpenIE(lv)
+}

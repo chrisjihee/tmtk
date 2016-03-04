@@ -41,6 +41,11 @@ class KoreanNLP(addr: String, lv: AnyRef = "I") {
     analyze(text).sentences.flatMap(_.morp.map(x => x.lemma + "/" + x.`type`))
 }
 
+object KoreanNLP {
+  def apply(addr: String) =
+    new KoreanNLP(addr)
+}
+
 class Packet(raw: String) {
   private val rxResult = """(?s)<result level="[0-9]+">(.+)</result>""".r
   val rxResult(json) = raw

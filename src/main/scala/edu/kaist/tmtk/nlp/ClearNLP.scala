@@ -81,3 +81,11 @@ class ClearNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] =
     tree
   }
 }
+
+object ClearNLP {
+  def apply(components: String) =
+    new ClearNLP(components)
+
+  def apply(components: String, lv: AnyRef) =
+    new ClearNLP(components, lv)
+}

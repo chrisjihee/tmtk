@@ -14,7 +14,7 @@ import org.apache.lucene.store.FSDirectory
 import scala.collection.Map
 import scala.collection.immutable.ListMap
 
-class Lucene(path: Any, analyzer: Analyzer = new StandardAnalyzer) {
+class Lucene(path: Any, analyzer: Analyzer) {
   val path2 = path match {
     case x: String => new File(x)
     case x: File => x
