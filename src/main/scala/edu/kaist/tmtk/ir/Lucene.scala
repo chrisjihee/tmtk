@@ -24,7 +24,10 @@ class Lucene(path: Any, analyzer: Analyzer) {
   lazy val parser = new QueryParser("X", analyzer)
   override val toString = s"Lucene($path with ${analyzer.getClass.getSimpleName})"
 
-  def clear() = writer.deleteAll()
+  def clear() = {
+    writer.deleteAll()
+    this
+  }
 
   def insert(row: Map[String, Any]) = {
     val d = new Document
@@ -39,7 +42,10 @@ class Lucene(path: Any, analyzer: Analyzer) {
     writer.addDocument(d)
   }
 
-  def commit() = writer.commit()
+  def commit() = {
+    writer.commit()
+    this
+  }
 
   private def format(query: String, args: Seq[Any]) =
     parser.parse(query.replace("?", "%s").trim.format(args: _*))
