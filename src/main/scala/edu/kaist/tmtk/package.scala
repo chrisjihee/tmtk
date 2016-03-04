@@ -172,6 +172,10 @@ package object tmtk {
 
   def method(lv: Int = 2): String = Thread.currentThread().getStackTrace()(lv).getMethodName
 
+  def filename: String = filename(3)
+
+  def filename(lv: Int = 2): String = Thread.currentThread().getStackTrace()(lv).getFileName.replaceAll("[.].*$", "")
+
   private val sysOut = System.out
   private val sysErr = System.err
 
