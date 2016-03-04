@@ -8,11 +8,12 @@ import java.nio.file.Paths
 import java.security.AccessController
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, LocalDateTime, ZoneId}
+import java.util.Properties
 import java.util.concurrent.atomic.AtomicLong
 
 import edu.kaist.tmtk.db.MySQL
 import org.apache.log4j.Level.{DEBUG, ERROR, FATAL, INFO, TRACE, WARN}
-import org.apache.log4j.{Level, Logger}
+import org.apache.log4j.{Level, LogManager, Logger, PropertyConfigurator}
 import sun.security.action.GetPropertyAction
 
 import scala.collection.JavaConversions.seqAsJavaList
@@ -290,7 +291,9 @@ package object tmtk {
     }
   }
 
-  def test(name: String = method(3), f: () => Any = null) = {
+  def test(name: String = method(3), f: () => Any = null, logfile: String = null) = {
+    if (logfile != null)
+      changeLogfile(logfile)
     init(name)
     var r: Any = null
     if (f != null)
@@ -306,6 +309,14 @@ package object tmtk {
     for (u <- Option(getClass.getResource("/" + file1)))
       return u.toURI
     null
+  }
+
+  def changeLogfile(logfile: String, propfile: String = "log4j.properties", key: String = "log4j.appender.FILE.File") = {
+    LogManager.resetConfiguration()
+    val props = new Properties
+    props.load(findFile(propfile).toURL.openStream)
+    props.setProperty(key, logfile)
+    PropertyConfigurator.configure(props)
   }
 
   def temp =
