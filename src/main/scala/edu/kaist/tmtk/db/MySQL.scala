@@ -5,9 +5,10 @@ import java.sql.DriverManager
 
 import edu.kaist.tmtk.{AsValue, log}
 import org.apache.commons.dbutils.QueryRunner
-import org.apache.commons.dbutils.handlers._
-import scala.collection.JavaConversions.iterableAsScalaIterable
+import org.apache.commons.dbutils.handlers.{ArrayHandler, ArrayListHandler, ColumnListHandler, MapHandler, MapListHandler, ScalarHandler}
+import resource.managed
 
+import scala.collection.JavaConversions.iterableAsScalaIterable
 import scala.collection.Map
 
 class MySQL(path: String, user: String, pswd: String, var table: String = null, var schema: String = null, lv: AnyRef = "I") extends Closeable {
@@ -20,6 +21,8 @@ class MySQL(path: String, user: String, pswd: String, var table: String = null, 
   log(s"[DONE] Connect $this", lv)
 
   override def close() = connection.close()
+
+  def manage() = managed(this)
 
   def create(schema: String, table: String = null) = {
     if (table != null)
@@ -37,6 +40,9 @@ class MySQL(path: String, user: String, pswd: String, var table: String = null, 
 
   def update(query: String, args: Any*) =
     runner.update(connection, query, args.map(_.asInstanceOf[AnyRef]): _*)
+
+  def size =
+    count(this.table)
 
   def count(query: String, args: Any*) =
     runner.query(connection, "SELECT COUNT(*) FROM " + query, new ScalarHandler[Long], args.map(_.asInstanceOf[AnyRef]): _*)
