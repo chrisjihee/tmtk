@@ -53,8 +53,7 @@ class Cassandra(path: String, var table: String = null, var schema: String = nul
   def update(query: String, args: Any*) =
     session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*))
 
-  def size =
-    count(this.table)
+  def size = count(this.table)
 
   def count(query: String, args: Any*) =
     session.execute(new SimpleStatement("SELECT COUNT(*) FROM " + query, args.map(_.asInstanceOf[AnyRef]): _*)).one.getLong(0)

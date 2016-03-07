@@ -50,6 +50,8 @@ class Lucene(path: Any, analyzer: Analyzer) {
   private def format(query: String, args: Seq[Any]) =
     parser.parse(query.replace("?", "%s").trim.format(args: _*))
 
+  def size = count("*:*")
+
   def count(query: String, args: Any*) =
     searcher.count(format(query, args))
 

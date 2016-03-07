@@ -41,8 +41,7 @@ class MySQL(path: String, user: String, pswd: String, var table: String = null, 
   def update(query: String, args: Any*) =
     runner.update(connection, query, args.map(_.asInstanceOf[AnyRef]): _*)
 
-  def size =
-    count(this.table)
+  def size = count(this.table)
 
   def count(query: String, args: Any*) =
     runner.query(connection, "SELECT COUNT(*) FROM " + query, new ScalarHandler[Long], args.map(_.asInstanceOf[AnyRef]): _*)
