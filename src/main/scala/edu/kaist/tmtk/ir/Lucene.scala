@@ -1,20 +1,20 @@
 package edu.kaist.tmtk.ir
 
-import java.io.File
+import java.io.{Closeable, File}
 
 import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Field.Store.YES
 import org.apache.lucene.document.{Document, DoubleField, FloatField, IntField, LongField, StringField, TextField}
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig}
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.store.FSDirectory
+import resource.managed
 
 import scala.collection.Map
 import scala.collection.immutable.ListMap
 
-class Lucene(path: Any, analyzer: Analyzer) {
+class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   val path2 = path match {
     case x: String => new File(x)
     case x: File => x
@@ -23,6 +23,13 @@ class Lucene(path: Any, analyzer: Analyzer) {
   lazy val searcher = new IndexSearcher(DirectoryReader.open(writer))
   lazy val parser = new QueryParser("X", analyzer)
   override val toString = s"Lucene($path with ${analyzer.getClass.getSimpleName})"
+
+  override def close() = {
+    writer.commit()
+    writer.close()
+  }
+
+  def manage() = managed(this)
 
   def clear() = {
     writer.deleteAll()

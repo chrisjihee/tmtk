@@ -17,7 +17,7 @@ class MySQL(path: String, user: String, pswd: String, var table: String = null, 
   lazy val runner = new QueryRunner
   if (table != null && schema != null)
     create(schema)
-  override val toString = s"MySQL($user@$path/${table.asStr("")})"
+  override val toString = s"MySQL($path/${table.asStr("")})"
   log(s"[DONE] Connect $this", lv)
 
   override def close() = connection.close()
