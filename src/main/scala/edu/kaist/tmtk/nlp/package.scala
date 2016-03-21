@@ -100,6 +100,9 @@ package object nlp {
 
   private val COMMON_RELs = Map("root" -> ROOT, "dep" -> DEPENDENT, "gov" -> GOVERNOR)
 
+  def toSRLDependencies(tree: DEPTree) =
+    tree.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
+
   def toTypedDependencies(tree: DEPTree) =
     tree.map(toTypedDependency).filter(_ != null)
 
@@ -136,6 +139,8 @@ package object nlp {
     graph
   } else null
 
+  def toSemanticGraph(deps: Iterable[TypedDependency]) = toSemanticGraph(deps, reset = true)
+
   def toChunkString(toks: Array[String], tags: Array[String], cnks: Array[String]) = {
     val buffer = new StringBuffer
     for (i <- cnks.indices) {
@@ -162,10 +167,11 @@ package object nlp {
       " 세종은 묘호이며, 시호는 영문예무인성명효대왕이고, 명에서 받은 시호는 장헌이다. 존시를 합치면 세종장헌영문예무인성명효대왕이 된다." +
       " 태종과 원경왕후의 셋째 아들이며, 비는 청천부원군 심온의 딸 소헌왕후 심씨이다."
     val textE2 = "Samsung Electronics is a South Korean multinational electronics company in Suwon, South Korea."
+    val textE3 = "John may like an ice cream cake of the shop very much."
     args.at(0, null) match {
       case "OpenNLP" => testOpenNLP(textE)
       case "StanfordNLP" => testStanfordNLP(textE)
-      case "ClearNLP" => testClearNLP(textE2)
+      case "ClearNLP" => testClearNLP(textE3)
       case "HannanumNLP" => testHannanumNLP(textK)
       case "KoreanNLP" => testKoreanNLP(textK)
       case _ =>
@@ -184,7 +190,7 @@ package object nlp {
       warn(s"   - [Recognized] $recognized")
       val phchunked = nlp.chunkToString(tokens, tags)
       warn(s"   - [Ph-Chunked] $phchunked")
-      val lexparsed = nlp.parseToString(sentence)
+      val lexparsed = nlp.parseToString(tokens.mkString(" "))
       warn(s"   - [Lex-Parsed] $lexparsed")
     }
   })
@@ -231,16 +237,16 @@ package object nlp {
       val pbvs = sentence.map(_.getFeat("pb")).map(x => if (x != null) x else "X")
       val pbvtagged = tokens.zip(pbvs).map(x => s"${x._1}/${x._2}")
       warn(s"   - [PBV-Tagged] ${pbvtagged.mkString(" ")}")
-      val srls = sentence.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
+      val srls = toSRLDependencies(sentence)
       val srlabeled = toSemanticGraph(srls)
       warn(s"   - [SR-Labeled] ${srls.mkString(" / ")}")
       warn(s"   - [SR-Labeled] \n${srlabeled.toString.trim}")
     }
   })
 
-  def testHannanumNLP(text:String) = test(method, () => {
+  def testHannanumNLP(text: String) = test(method, () => {
     val nlp = new HannanumNLP("ssplit, pos")
-    for(sentence <- nlp.detect(text)) {
+    for (sentence <- nlp.detect(text)) {
       warn(s" + [Raw Sentence] $sentence")
       warn(s"   - [POS-Tagged] ${nlp.tag(sentence).mkString(" ")}")
     }
