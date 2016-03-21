@@ -97,7 +97,7 @@ class OpenNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = 
     parse(sent, k).map(toTreeString)
 
   def parseToString(sent: String): String =
-    parseToString(sent, 1)(0)
+    toTreeString(parse(sent))
 
   def recognize(toks: Array[String]): String = {
     val spans = recognizers.flatMap(_.find(toks))

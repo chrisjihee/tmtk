@@ -132,14 +132,14 @@ package object nlp {
     word
   }
 
-  def toSemanticGraph(deps: Iterable[TypedDependency], reset: Boolean = true) = if (deps.nonEmpty) {
+  def toSemanticGraph(deps: Iterable[TypedDependency], reset: Boolean = true): SemanticGraph = if (deps.nonEmpty) {
     val graph = new SemanticGraph(deps)
     if (reset)
       graph.resetRoots()
     graph
   } else null
 
-  def toSemanticGraph(deps: Iterable[TypedDependency]) = toSemanticGraph(deps, reset = true)
+  def toSemanticGraph(deps: Iterable[TypedDependency]): SemanticGraph = toSemanticGraph(deps, reset = true)
 
   def toChunkString(toks: Array[String], tags: Array[String], cnks: Array[String]) = {
     val buffer = new StringBuffer
@@ -166,7 +166,7 @@ package object nlp {
     val textK = "조선 세종은 조선의 제4대 왕이다. 성은 이, 휘는 도, 본관은 전주, 자는 원정, 아명은 막동이다." +
       " 세종은 묘호이며, 시호는 영문예무인성명효대왕이고, 명에서 받은 시호는 장헌이다. 존시를 합치면 세종장헌영문예무인성명효대왕이 된다." +
       " 태종과 원경왕후의 셋째 아들이며, 비는 청천부원군 심온의 딸 소헌왕후 심씨이다."
-    val textE2 = "Samsung Electronics is a South Korean multinational electronics company in Suwon, South Korea."
+    //val textE2 = "Samsung Electronics is a South Korean multinational electronics company in Suwon, South Korea."
     val textE3 = "John may like an ice cream cake of the shop very much."
     args.at(0, null) match {
       case "OpenNLP" => testOpenNLP(textE)
