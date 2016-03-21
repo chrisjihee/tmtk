@@ -1,5 +1,7 @@
 package edu.kaist.tmtk.nlp
 
+import java.util.{List => JList}
+
 import edu.emory.clir.clearnlp.component.mode.dep.DEPConfiguration
 import edu.emory.clir.clearnlp.component.mode.srl.SRLConfiguration
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
@@ -55,20 +57,34 @@ class ClearNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] =
   def tokenize(text: String): Iterable[String] =
     tokenizer.tokenize(text).toIterable
 
-  def detect(text: String): Iterable[Iterable[String]] =
-    tokenizer.segmentize(toInputStream(text)).map(_.toIterable)
+  def detect(text: String) =
+    tokenizer.segmentize(toInputStream(text))
 
   def tagWord(toks: Iterable[String]) =
-    analyze(toks).map(x => x.getWordForm + "/" + x.getPOSTag)
+    process(toks).map(x => x.getWordForm + "/" + x.getPOSTag)
+
+  def tagWord(toks: Array[String]) =
+    process(toks).map(x => x.getWordForm + "/" + x.getPOSTag)
+
+  def tagWord(toks: JList[String]) =
+    process(toks).map(x => x.getWordForm + "/" + x.getPOSTag)
 
   def tagLemma(toks: Iterable[String]) =
-    analyze(toks).map(x => x.getLemma + "/" + x.getPOSTag)
+    process(toks).map(x => x.getLemma + "/" + x.getPOSTag)
 
-  def analyze(text: String): Iterable[DEPTree] = detect(text).map(analyze)
+  def tagLemma(toks: Array[String]) =
+    process(toks).map(x => x.getLemma + "/" + x.getPOSTag)
 
-  def analyze(toks: Iterable[String]): DEPTree = analyze(asTree(toks))
+  def tagLemma(toks: JList[String]) =
+    process(toks).map(x => x.getLemma + "/" + x.getPOSTag)
 
-  def analyze(tree: DEPTree) = {
+  def process(toks: Iterable[String]): DEPTree = process(asTree(toks))
+
+  def process(toks: Array[String]): DEPTree = process(asTree(toks))
+
+  def process(toks: JList[String]): DEPTree = process(asTree(toks))
+
+  def process(tree: DEPTree) = {
     for (annotator <- annotators)
       annotator.process(tree)
     tree
@@ -80,6 +96,8 @@ class ClearNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] =
       tree.add(new DEPNode(i + 1, tok))
     tree
   }
+
+  def analyze(text: String) = detect(text).map(process)
 }
 
 object ClearNLP {
