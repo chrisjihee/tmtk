@@ -161,10 +161,12 @@ package object nlp {
     val textK = "조선 세종은 조선의 제4대 왕이다. 성은 이, 휘는 도, 본관은 전주, 자는 원정, 아명은 막동이다." +
       " 세종은 묘호이며, 시호는 영문예무인성명효대왕이고, 명에서 받은 시호는 장헌이다. 존시를 합치면 세종장헌영문예무인성명효대왕이 된다." +
       " 태종과 원경왕후의 셋째 아들이며, 비는 청천부원군 심온의 딸 소헌왕후 심씨이다."
+    val textE2 = "Samsung Electronics is a South Korean multinational electronics company in Suwon, South Korea."
     args.at(0, null) match {
       case "OpenNLP" => testOpenNLP(textE)
       case "StanfordNLP" => testStanfordNLP(textE)
-      case "ClearNLP" => testClearNLP(textE)
+      case "ClearNLP" => testClearNLP(textE2)
+      case "HannanumNLP" => testHannanumNLP(textK)
       case "KoreanNLP" => testKoreanNLP(textK)
       case _ =>
     }
@@ -222,16 +224,27 @@ package object nlp {
       val ners = sentence.map(_.getNamedEntityTag).map(x => if (x != null) x else "X")
       val recognized = tokens.zip(ners).map(x => s"${x._1}/${x._2}")
       warn(s"   - [Recognized] ${recognized.mkString(" ")}")
-      val pbvs = sentence.map(_.getFeat("pb")).map(x => if (x != null) x else "X")
-      val pbvtagged = tokens.zip(pbvs).map(x => s"${x._1}/${x._2}")
-      warn(s"   - [PBV-Tagged] ${pbvtagged.mkString(" ")}")
-      val srls = sentence.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
-      warn(s"   - [SR-Labeled] ${srls.mkString(" / ")}")
       val deps = toTypedDependencies(sentence)
       val depparsed = toSemanticGraph(deps)
       warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
       warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
+      val pbvs = sentence.map(_.getFeat("pb")).map(x => if (x != null) x else "X")
+      val pbvtagged = tokens.zip(pbvs).map(x => s"${x._1}/${x._2}")
+      warn(s"   - [PBV-Tagged] ${pbvtagged.mkString(" ")}")
+      val srls = sentence.flatMap(x => x.getSemanticHeadArcList.map(y => (x, y))).map(toTypedDependency)
+      val srlabeled = toSemanticGraph(srls)
+      warn(s"   - [SR-Labeled] ${srls.mkString(" / ")}")
+      warn(s"   - [SR-Labeled] \n${srlabeled.toString.trim}")
     }
+  })
+
+  def testHannanumNLP(text:String) = test(method, () => {
+    val nlp = new HannanumNLP("ssplit, pos")
+    for(sentence <- nlp.detect(text)) {
+      warn(s" + [Raw Sentence] $sentence")
+      warn(s"   - [POS-Tagged] ${nlp.tag(sentence).mkString(" ")}")
+    }
+    nlp.close()
   })
 
   def testKoreanNLP(text: String) = test(method, () => {

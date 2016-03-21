@@ -34,6 +34,9 @@ object StanfordNLP {
   def apply(components: String) =
     new StanfordNLP(components)
 
+  def apply(components: String, q: Boolean) =
+    new StanfordNLP(components, "W", q)
+
   def apply(components: String, lv: AnyRef) =
     new StanfordNLP(components, lv)
 

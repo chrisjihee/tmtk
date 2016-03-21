@@ -28,6 +28,9 @@ class OpenIE(lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Ma
 }
 
 object OpenIE {
+  def apply(q: Boolean) =
+    new OpenIE("W", q)
+
   def apply(lv: AnyRef) =
     new OpenIE(lv)
 
