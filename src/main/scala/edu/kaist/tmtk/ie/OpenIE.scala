@@ -7,9 +7,9 @@ import edu.knowitall.tool.parse.MaltParser
 
 import scala.collection.mutable.{LinkedHashMap => Map}
 
-class OpenIE(lv: AnyRef = "W", conf: Map[String, String] = Map("dep.model" -> "maltparser/engmalt.linear-1.7.mco")) {
+class OpenIE(lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Map("dep.model" -> "maltparser/engmalt.linear-1.7.mco")) {
   System.setProperty("Malt.verbosity", "WARN")
-  val parser = quite2(() => new MaltParser(findFile(conf("dep.model")).toURL))
+  val parser = quite2(() => new MaltParser(findFile(conf("dep.model")).toURL), q)
   val extractor = new Ollie
   val confidence = OllieConfidenceFunction.loadDefaultClassifier()
   override val toString = s"OpenIE(${extractor.getClass.getSimpleName})"
@@ -30,4 +30,7 @@ class OpenIE(lv: AnyRef = "W", conf: Map[String, String] = Map("dep.model" -> "m
 object OpenIE {
   def apply(lv: AnyRef) =
     new OpenIE(lv)
+
+  def apply(lv: AnyRef, q: Boolean) =
+    new OpenIE(lv, q)
 }

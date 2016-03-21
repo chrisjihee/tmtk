@@ -7,7 +7,7 @@ import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
 
 import scala.collection.mutable.{LinkedHashMap => Map}
 
-class StanfordNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = Map(
+class StanfordNLP(components: String, lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Map(
   "tokenize.class" -> "PTBTokenizer",
   "pos.maxlen" -> "120",
   "parse.maxlen" -> "120"
@@ -18,7 +18,7 @@ class StanfordNLP(components: String, lv: AnyRef = "W", conf: Map[String, String
     for ((k, v) <- conf)
       p.setProperty(k, v)
     p
-  }))
+  }), q)
   override val toString = s"StanfordNLP($components)"
   log(s"[DONE] Load $this", lv)
 
@@ -36,4 +36,7 @@ object StanfordNLP {
 
   def apply(components: String, lv: AnyRef) =
     new StanfordNLP(components, lv)
+
+  def apply(components: String, lv: AnyRef, q: Boolean) =
+    new StanfordNLP(components, lv, q)
 }

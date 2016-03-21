@@ -197,24 +197,24 @@ package object tmtk {
     offErr()
   }
 
-  def quite1[A](f: () => A) = {
-    offOut()
+  def quite1[A](f: () => A, q: Boolean = true) = {
+    if (q) offOut()
     val r = f()
-    onOut()
+    if (q) onOut()
     r
   }
 
-  def quite2[A](f: () => A) = {
-    offErr()
+  def quite2[A](f: () => A, q: Boolean = true) = {
+    if (q) offErr()
     val r = f()
-    onErr()
+    if (q) onErr()
     r
   }
 
-  def quite[A](f: () => A) = {
-    offBoth()
+  def quite[A](f: () => A, q: Boolean = true) = {
+    if (q) offBoth()
     val r = f()
-    onAll()
+    if (q) onAll()
     r
   }
 
@@ -333,7 +333,7 @@ package object tmtk {
     new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
 
   def toItems(values: Array[String], sep: String = "=") =
-    values.map(_.split(sep, 2)).filter(_.size >= 2).map(x => (x.head, x.last))
+    values.map(_.split(sep, 2)).filter(_.length >= 2).map(x => (x.head, x.last))
 
   def connect(host: String, port: Int, second: Int = 0) = try {
     pause(() => new Socket(new JSocket(host, port)), second)
