@@ -1,7 +1,13 @@
 package edu.kaist.tmtk
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import de.tudarmstadt.ukp.wikipedia.api.Page
 import de.tudarmstadt.ukp.wikipedia.api.exception.{WikiPageNotFoundException, WikiTitleParsingException}
+import edu.kaist.tmtk.db.Cassandra
+
+import scala.reflect.io.File
+import scala.util.Properties
 
 package object kb {
 
@@ -106,9 +112,37 @@ package object kb {
     args.at(0, null) match {
       case "WikipediaE" => testWikipediaE()
       case "WikipediaK" => testWikipediaK()
+      case "Wikidata" => testWikidata()
       case _ =>
     }
   }
+
+  def testWikidata() = test(method, () => {
+    val kb = new Wikipedia("143.248.48.105/enwiki", "admin", "admin1", "english")
+    val labels = List(5, 6256, 34770, 515, 4022, 4830453, 11424) // human, country, language, city, river, business enterprise, film
+    File("target/data").jfile.mkdirs()
+
+    for (db <- new Cassandra("143.248.48.105/wikidata", "tuple2").manage()) {
+      for {
+        o <- labels
+        o2 = db.one("SELECT label1 FROM item1 WHERE v=0 and i=?", o)
+      } {
+        val n = new AtomicInteger
+        for {
+          s <- db.ones("SELECT s FROM tuple3 WHERE v=0 and o=? and p=? limit 500", o, 31)
+          os = db.ones("SELECT o FROM tuple1 WHERE v=0 and s=? and p=?", s, 31) if os.count(labels.contains) == 1
+          s3 = db.one("SELECT link1 FROM item1 WHERE v=0 and i=?", s).asStr if s3.startsWith("enwiki/")
+          s4 = s3.replaceFirst("^enwiki/", "").replace("''", "'")
+          page = kb.getPage(s4) if page != null
+          text = page.getDisplayedSections.head._2.replace("\n\n", "\n") if text.length >= 500
+          n2 = n.incrementAndGet if n2 <= 100
+        } {
+          File(s"target/data/$o2$n2.txt").writeAll(s"$s4", Properties.lineSeparator, text)
+          warn(s"[DONE] Saved $o2$n2.txt -- Q$s -- $s4")
+        }
+      }
+    }
+  })
 
   def testWikipediaE() = test(method, () => {
     val kb = new Wikipedia("143.248.48.105/enwiki", "admin", "admin1", "english")
