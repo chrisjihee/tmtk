@@ -22,6 +22,7 @@ package object ml {
     ml.add(Array(0, 0, 1, 0), "B")
     ml.add(Array(0, 0, 0, 1), "B")
     ml.add(Array(0, 0, 1, 1), "B")
+    ml.data.randomize(new Random())
     ml.data.stratify(3)
     ml.save("target/test.arff")
 
