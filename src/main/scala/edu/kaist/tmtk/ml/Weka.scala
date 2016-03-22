@@ -1,5 +1,6 @@
 package edu.kaist.tmtk.ml
 
+import java.lang.{Double => JDouble, Integer => JInt}
 import java.util.{ArrayList => AList, List => JList}
 
 import edu.kaist.tmtk.AsValue
@@ -24,11 +25,21 @@ class Weka(dataname: String, sizeFeature: Int, labels: JList[String], filename: 
   def add(features: Array[Double], label: String) = {
     val values = features.toBuffer += data.classAttribute().indexOfValue(label).asDouble
     data.add(new DenseInstance(1.0, values.toArray))
-    //    val values =
-    //      for (i <- attrs.indices) yield
-    //        if (i < attrs.size - 1) features(i)
-    //        else attrs(attrs.size - 1).indexOfValue(label)
-    //    data.add(new DenseInstance(1.0, values.toArray))
+  }
+
+  def add(features: Array[JDouble], label: String) = {
+    val values = features.toBuffer[JDouble].map(_.asDouble) += data.classAttribute().indexOfValue(label).asDouble
+    data.add(new DenseInstance(1.0, values.toArray))
+  }
+
+  def add(features: Array[Int], label: String) = {
+    val values = features.toBuffer[Int].map(_.asDouble) += data.classAttribute().indexOfValue(label).asDouble
+    data.add(new DenseInstance(1.0, values.toArray))
+  }
+
+  def add(features: Array[JInt], label: String) = {
+    val values = features.toBuffer[JInt].map(_.asDouble) += data.classAttribute().indexOfValue(label).asDouble
+    data.add(new DenseInstance(1.0, values.toArray))
   }
 
   def save(filename: String) = DataSink.write(filename, data)
