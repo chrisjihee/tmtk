@@ -31,6 +31,7 @@ libraryDependencies += "de.tudarmstadt.ukp.wikipedia" % "de.tudarmstadt.ukp.wiki
 libraryDependencies += "org.apache.lucene" % "lucene-core" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-analyzers-common" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-queryparser" % "5.5.0"
+libraryDependencies += "nz.ac.waikato.cms.weka" % "weka-dev" % "3.7.13"
 
 assemblyMergeStrategy in assembly := getStrategy
 Project.inConfig(Test)(baseAssemblySettings ++ Seq(assemblyMergeStrategy in assembly := getStrategy))
