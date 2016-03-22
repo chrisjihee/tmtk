@@ -7,7 +7,7 @@ import de.tudarmstadt.ukp.wikipedia.api.exception.{WikiPageNotFoundException, Wi
 import edu.kaist.tmtk.db.Cassandra
 
 import scala.reflect.io.File
-import scala.util.Properties
+import scala.util.Properties.lineSeparator
 
 package object kb {
 
@@ -137,7 +137,7 @@ package object kb {
           text = page.getDisplayedSections.head._2.replace("\n\n", "\n") if text.length >= 500
           n2 = n.incrementAndGet if n2 <= 100
         } {
-          File(s"target/data/$o2$n2.txt").writeAll(s"$s4", Properties.lineSeparator, text)
+          File(s"target/data/$o2$n2.txt").writeAll(s"$s4", lineSeparator, text)
           warn(s"[DONE] Saved $o2$n2.txt -- Q$s -- $s4")
         }
       }
