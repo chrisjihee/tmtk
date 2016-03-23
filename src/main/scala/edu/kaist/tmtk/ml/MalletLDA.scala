@@ -12,7 +12,7 @@ import cc.mallet.types.{FeatureSequence, IDSorter, InstanceList}
 import scala.collection.JavaConversions._
 import scala.collection.immutable.ListMap
 
-class LDA(data_dir: String) {
+class MalletLDA(data_dir: String) {
   var DEFAULT_NUM_KEYWORDS = 20
   var DEFAULT_ALPHA_SUM = 50.0
   var DEFAULT_BETA = 0.01
@@ -42,14 +42,13 @@ class LDA(data_dir: String) {
     model.setNumThreads(1)
     model.estimate()
 
-    val topics = for (i <- 0 until numCluster) yield {
+    val wordDists = ListMap((for (i <- 0 until numCluster) yield {
       val words = for (info <- model.getSortedWords.get(i).toList) yield
         f"${model.alphabet.lookupObject(info.getID)}/${info.getWeight}%.0f"
       (i, words)
-    }
-    val clusteredWords = ListMap(topics: _*)
+    }): _*)
 
-    val output = for (id <- 0 until model.data.size) yield {
+    val topicDists = for (id <- 0 until model.data.size) yield {
       val result = model.data.get(id)
       val name = result.instance.getName.toString
       val input = result.instance.getData.asInstanceOf[FeatureSequence]
@@ -65,6 +64,6 @@ class LDA(data_dir: String) {
       (id, name, input, topics.sortBy(_.getWeight * -1))
     }
 
-    (output, clusteredWords)
+    (topicDists, wordDists)
   }
 }

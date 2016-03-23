@@ -11,24 +11,45 @@ package object ml {
     args.at(0, null) match {
       case "Weka" => testWeka()
       case "LDA" => testLDA()
+      case "CRF" => testCRF()
       case _ =>
     }
   }
 
+  def testCRF() = test(method, () => {
+    val data1 = Array("John/NNP/NP loves/VBZ/O ice/NN/NP cream/NN/NP cake/NN/NP ././O", "But/CC/O he/PRP/NP does/VBZ/O not/RB/O love/VB/O orange/JJ/NP juice/NN/NP ././O")
+    val data2 = Array("You/PRP/NP do/VBP/O not/RB/O eat/VB/O apple/NN/NP ././O", "But/CC/O Mary/NNP/NP loves/VBZ/O it/PRP/NP ././O")
+
+    val ml = new MalletCRF
+    //ml.setTrainData("data3/NP1.txt")
+    //ml.setTestData("data3/NP2.txt")
+    ml.setTrainData(data1.map(x => x.replace(" ", "\n").replace("/", " ")))
+    ml.train(10000)
+
+    ml.setTestData(data2.map(x => x.replace(" ", "\n").replace("/", " ")))
+    println("OUTPUTs------------------")
+    for ((input, outputs) <- ml.test(1)) {
+      val output = outputs(0)
+      for (i <- 0 until input.size)
+        println(Seq(input.get(i).toString.trim.replace("\n", "/"), output(i)).mkString("\t"))
+      println()
+    }
+  })
+
   def testLDA() = test(method, () => {
-    val ml = new LDA("data2")
+    val ml = new MalletLDA("data2")
     val (output, clusteredWords) = ml.cluster(5, 1000)
 
     println("-Topic Distribution--------------------------------------------------------")
-    for((id, name, input, topics) <- output) {
-      val dists = for(topic <- topics) yield
+    for ((id, name, input, topics) <- output) {
+      val dists = for (topic <- topics) yield
         f"${topic.getID}(${topic.getWeight}%.4f)"
       val name2 = name.replaceAll("file:/.+/(.+)", "$1")
       println(Seq(id, name2, dists.mkString("\t")).mkString("\t"))
     }
 
     println("-Word Distribution---------------------------------------------------------")
-    for((id, words) <- clusteredWords)
+    for ((id, words) <- clusteredWords)
       println(f"$id\t${words.mkString(" ")}")
   })
 
