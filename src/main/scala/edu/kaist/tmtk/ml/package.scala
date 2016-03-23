@@ -20,8 +20,8 @@ package object ml {
     val (output, clusteredWords) = ml.cluster(5, 1000)
 
     println("-Topic Distribution--------------------------------------------------------")
-    for((id, name, input, outputs) <- output) {
-      val dists = for(topic <- outputs) yield
+    for((id, name, input, topics) <- output) {
+      val dists = for(topic <- topics) yield
         f"${topic.getID}(${topic.getWeight}%.4f)"
       val name2 = name.replaceAll("file:/.+/(.+)", "$1")
       println(Seq(id, name2, dists.mkString("\t")).mkString("\t"))

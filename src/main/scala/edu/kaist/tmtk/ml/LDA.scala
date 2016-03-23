@@ -53,16 +53,16 @@ class LDA(data_dir: String) {
       val result = model.data.get(id)
       val name = result.instance.getName.toString
       val input = result.instance.getData.asInstanceOf[FeatureSequence]
-      val topic_counts = new util.LinkedHashMap[Int, Int]
+      val counts = new util.LinkedHashMap[Int, Int]
       for (i <- 0 until numCluster)
-        topic_counts(i) = 0
+        counts(i) = 0
       for (i <- result.topicSequence.getFeatures)
-        topic_counts(i) = topic_counts(i) + 1
-      val outputs = for (i <- 0 until numCluster) yield {
-        val prob = (topic_counts(i) + model.alpha(i)) / (result.topicSequence.getFeatures.length + model.alphaSum)
+        counts(i) = counts(i) + 1
+      val topics = for (i <- 0 until numCluster) yield {
+        val prob = (counts(i) + model.alpha(i)) / (result.topicSequence.getFeatures.length + model.alphaSum)
         new IDSorter(i, prob)
       }
-      (id, name, input, outputs.sortBy(_.getWeight * -1))
+      (id, name, input, topics.sortBy(_.getWeight * -1))
     }
 
     (output, clusteredWords)
