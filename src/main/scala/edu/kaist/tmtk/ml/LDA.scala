@@ -11,7 +11,6 @@ import cc.mallet.types.{FeatureSequence, IDSorter, InstanceList}
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.ListMap
-import edu.kaist.tmtk.AsValue
 
 class LDA(data_dir: String) {
   var DEFAULT_NUM_KEYWORDS = 20
