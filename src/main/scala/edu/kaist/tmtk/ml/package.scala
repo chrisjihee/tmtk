@@ -4,15 +4,33 @@ import java.util.Random
 
 import weka.classifiers.Evaluation
 
-import scala.collection.JavaConversions.{collectionAsScalaIterable, seqAsJavaList}
+import scala.collection.JavaConversions._
 
 package object ml {
   def main(args: Array[String]) {
     args.at(0, null) match {
       case "Weka" => testWeka()
+      case "LDA" => testLDA()
       case _ =>
     }
   }
+
+  def testLDA() = test(method, () => {
+    val ml = new LDA("data2")
+    val (output, clusteredWords) = ml.cluster(5, 1000)
+
+    println("-Topic Distribution--------------------------------------------------------")
+    for((id, name, input, outputs) <- output) {
+      val dists = for(topic <- outputs) yield
+        f"${topic.getID}(${topic.getWeight}%.4f)"
+      val name2 = name.replaceAll("file:/.+/(.+)", "$1")
+      println(Seq(id, name2, dists.mkString("\t")).mkString("\t"))
+    }
+
+    println("-Word Distribution---------------------------------------------------------")
+    for((id, words) <- clusteredWords)
+      println(f"$id\t${words.mkString(" ")}")
+  })
 
   def testWeka() = test(method, () => {
     val ml = new Weka("test", 4, Seq("A", "B"))
@@ -49,11 +67,11 @@ package object ml {
     eval.evaluateModel(classifier, test)
     warn("Result Summary" + eval.toSummaryString("", false))
     warn("Detailed Accuracy" + eval.toClassDetailsString(""))
-    warn("Confusion Matrix " + eval.toMatrixString(""))
+    warn("Confusion Matrix" + eval.toMatrixString(""))
 
     eval.crossValidateModel(classifier, ml.data, 3, new Random(1))
     warn("Result Summary" + eval.toSummaryString("", false))
     warn("Detailed Accuracy" + eval.toClassDetailsString(""))
-    warn("Confusion Matrix " + eval.toMatrixString(""))
+    warn("Confusion Matrix" + eval.toMatrixString(""))
   })
 }
