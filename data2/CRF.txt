@@ -1,0 +1,91 @@
+Conditional random fields (CRFs) are a class of statistical modelling method often applied in pattern recognition and machine learning, where they are used for structured prediction. Whereas an ordinary classifier predicts a label for a single sample without regard to "neighboring" samples, a CRF can take context into account; e.g., the linear chain CRF popular in natural language processing predicts sequences of labels for sequences of input samples.
+
+CRFs are a type of discriminative undirected probabilistic graphical model. It is used to encode known relationships between observations and construct consistent interpretations. It is often used for labeling or parsing of sequential data, such as natural language text or biological sequences[1] and in computer vision.[2] Specifically, CRFs find applications in shallow parsing,[3] named entity recognition[4] and gene finding, among other tasks, being an alternative to the related hidden Markov models. In computer vision, CRFs are often used for object recognition and image segmentation.
+
+Contents  [hide] 
+1 Description
+1.1 Inference
+1.2 Parameter Learning
+1.3 Examples
+2 Variants
+2.1 Higher-order CRFs and semi-Markov CRFs
+2.2 Latent-dynamic conditional random field
+3 Software
+4 See also
+5 References
+6 Further reading
+Description[edit]
+Lafferty, McCallum and Pereira[1] define a CRF on observations \boldsymbol{X} and random variables \boldsymbol{Y} as follows:
+
+Let G = (V , E) be a graph such that
+
+\boldsymbol{Y} = (\boldsymbol{Y}_v)_{v\in V}, so that \boldsymbol{Y} is indexed by the vertices of G. Then (\boldsymbol{X}, \boldsymbol{Y}) is a conditional random field when the random variables \boldsymbol{Y}_v, conditioned on \boldsymbol{X}, obey the Markov property with respect to the graph: p(\boldsymbol{Y}_v |\boldsymbol{X}, \boldsymbol{Y}_w, w \neq v) = p(\boldsymbol{Y}_v |\boldsymbol{X}, \boldsymbol{Y}_w, w \sim v), where \mathit{w} \sim v means that w and v are neighbors in G.
+
+What this means is that a CRF is an undirected graphical model whose nodes can be divided into exactly two disjoint sets \boldsymbol{X} and \boldsymbol{Y}, the observed and output variables, respectively; the conditional distribution p(\boldsymbol{Y}|\boldsymbol{X}) is then modeled.
+
+Inference[edit]
+For general graphs, the problem of exact inference in CRFs is intractable. The inference problem for a CRF is basically the same as for an MRF and the same arguments hold.[5] However there exist special cases for which exact inference is feasible:
+
+If the graph is a chain or a tree, message passing algorithms yield exact solutions. The algorithms used in these cases are analogous to the forward-backward and Viterbi algorithm for the case of HMMs.
+If the CRF only contains pair-wise potentials and the energy is submodular, combinatorial min cut/max flow algorithms yield exact solutions.
+If exact inference is impossible, several algorithms can be used to obtain approximate solutions. These include:
+
+Loopy belief propagation
+Alpha expansion
+Mean field inference
+Linear programming relaxations
+Parameter Learning[edit]
+Learning the parameters \theta is usually done by maximum likelihood learning for p(Y_i|X_i; \theta). If all nodes have exponential family distributions and all nodes are observed during training, this optimization is convex.[5] It can be solved for example using gradient descent algorithms, or Quasi-Newton methods such as the L-BFGS algorithm. On the other hand, if some variables are unobserved, the inference problem has to be solved for these variables. Exact inference is intractable in general graphs, so approximations have to be used.
+
+Examples[edit]
+In sequence modeling, the graph of interest is usually a chain graph. An input sequence of observed variables X represents a sequence of observations and Y represents a hidden (or unknown) state variable that needs to be inferred given the observations. The Y_{i} are structured to form a chain, with an edge between each Y_{i-1} and Y_{i}. As well as having a simple interpretation of the Y_{i} as "labels" for each element in the input sequence, this layout admits efficient algorithms for:
+
+model training, learning the conditional distributions between the Y_{i} and feature functions from some corpus of training data.
+inference, determining the probability of a given label sequence Y given X.
+decoding, determining the most likely label sequence Y given X.
+The conditional dependency of each Y_{i} on X is defined through a fixed set of feature functions of the form f(i, Y_{i-1}, Y_{i}, X), which can informally be thought of as measurements on the input sequence that partially determine the likelihood of each possible value for Y_{i}. The model assigns each feature a numerical weight and combines them to determine the probability of a certain value for Y_{i}.
+
+Linear-chain CRFs have many of the same applications as conceptually simpler hidden Markov models (HMMs), but relax certain assumptions about the input and output sequence distributions. An HMM can loosely be understood as a CRF with very specific feature functions that use constant probabilities to model state transitions and emissions. Conversely, a CRF can loosely be understood as a generalization of an HMM that makes the constant transition probabilities into arbitrary functions that vary across the positions in the sequence of hidden states, depending on the input sequence.
+
+Notably in contrast to HMMs, CRFs can contain any number of feature functions, the feature functions can inspect the entire input sequence X at any point during inference, and the range of the feature functions need not have a probabilistic interpretation.
+
+Variants[edit]
+Higher-order CRFs and semi-Markov CRFs[edit]
+CRFs can be extended into higher order models by making each Y_{i} dependent on a fixed number o of previous variables Y_{i-o}, ..., Y_{i-1}. Training and inference are only practical for small values of o (such as o ≤ 5),[citation needed] since their computational cost increases exponentially with o. Large-margin models for structured prediction, such as the structured Support Vector Machine can be seen as an alternative training procedure to CRFs.
+
+There exists another generalization of CRFs, the semi-Markov conditional random field (semi-CRF), which models variable-length segmentations of the label sequence Y.[6] This provides much of the power of higher-order CRFs to model long-range dependencies of the Y_{i}, at a reasonable computational cost.
+
+Latent-dynamic conditional random field[edit]
+Latent-dynamic conditional random fields (LDCRF) or discriminative probabilistic latent variable models (DPLVM) are a type of CRFs for sequence tagging tasks. They are latent variable models that are trained discriminatively.
+
+In an LDCRF, like in any sequence tagging task, given a sequence of observations x = x₁, … xₙ, the main problem the model must solve is how to assign a sequence of labels y = y₁, … yₙ from one finite set of labels Y. Instead of directly modeling P(y|x) as an ordinary linear-chain CRF would do, instead a set of latent variables h is "inserted" between x and y using the chain rule of probability:[7]
+
+P(\mathbf{y} | \mathbf{x}) = \sum_\mathbf{h} P(\mathbf{y}|\mathbf{h}, \mathbf{x}) P(\mathbf{h} | \mathbf{x})
+This allows the capturing of latent structure between the observations and labels.[8] While LDCRFs can be trained using quasi-Newton methods, a specialized version of the perceptron algorithm called the latent-variable perceptron has been developed for them as well, based on Collins' structured perceptron algorithm.[7] These models find applications in computer vision, specifically gesture recognition from video streams,[8] and shallow parsing.[7]
+
+Software[edit]
+This is a partial list of software that implement generic CRF tools.
+
+CRF-ADF Linear-chain CRFs with fast online ADF training (C#, .NET)
+CRFSharp Linear-chain CRFs (C#, .NET)
+GCO CRFs with submodular energy functions (C++, Matlab)
+GRMM General CRFs (Java)
+factorie General CRFs (Scala)
+CRFall General CRFs (Matlab)
+Sarawagi's CRF Linear-chain CRFs (Java)
+HCRF library Hidden-state CRFs (C++, Matlab)
+Wapiti Fast linear-chain CRFs (C)[9]
+CRFSuite Fast restricted linear-chain CRFs (C)
+CRF++ Linear-chain CRFs (C++)
+FlexCRFs First-order and second-order Markov CRFs (C++)
+crf-chain1 First-order, linear-chain CRFs (Haskell)
+imageCRF CRF for segmenting images and image volumes (C++)
+This is a partial list of software that implement CRF related tools.
+
+Conrad CRF based gene predictor (Java)
+Stanford NER Named Entity Recognizer (Java)
+BANNER Named Entity Recognizer (Java)
+See also[edit]
+Graphical model
+Markov random field
+Maximum entropy Markov model (MEMM)

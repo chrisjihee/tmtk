@@ -1,0 +1,12 @@
+You PRP NP
+do VBP O
+not RB O
+eat VB O
+apple NN NP
+. . O
+
+But CC O
+Mary NNP NP
+loves VBZ O
+it PRP NP
+. . O

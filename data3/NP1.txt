@@ -1,0 +1,15 @@
+John NNP NP
+loves VBZ O
+Ice NN NP
+cream NN NP
+cake NN NP
+. . O
+
+But CC O
+he PRP NP
+does VBZ O
+not RB O
+love VB O
+orange JJ NP
+juice NN NP
+. . O
