@@ -39,14 +39,14 @@ assemblyMergeStrategy in assembly := getStrategy
 Project.inConfig(Test)(baseAssemblySettings ++ Seq(assemblyMergeStrategy in assembly := getStrategy))
 def getStrategy(path: String) = path match {
   case x if x.startsWith("META-INF") => MergeStrategy.discard
-  case x if x.equals("log4j.properties") => MergeStrategy.first
-  case x if x.matches(".+[.](class|xz)") => MergeStrategy.first
+  case x if x.matches(".+[.](class|xz|xml|xsd|properties)") => MergeStrategy.first
   case PathList("javax", "servlet", _*) => MergeStrategy.first
   case PathList("edu", "emory", "clir", _*) => MergeStrategy.first
   case PathList("edu", "stanford", "nlp", _*) => MergeStrategy.first
+  case PathList("org", "joda", "time", _*) => MergeStrategy.first
   case PathList("opennlp", _*) => MergeStrategy.first
   case PathList("hannanum", _*) => MergeStrategy.first
   case PathList("maltparser", _*) => MergeStrategy.first
-  case PathList(x@_*) if x.size > 1 && x.last.matches(".+[.](properties|xml|txt)") => MergeStrategy.first
+  case PathList(x@_*) if x.size > 1 && x.last.matches(".+[.](properties|xml|xsd|properties|txt)") => MergeStrategy.first
   case _ => MergeStrategy.discard
 }

@@ -222,7 +222,7 @@ package object nlp {
   def testStanfordNLP2() = test(method, () => {
     val text = "Last summer, they met every Tuesday afternoon, from 1 pm to 3 pm. I went to school yesterday. I will come back two weeks later."
     val date = "2016-01-01"
-    val nlp = new StanfordNLP("normalize")
+    val nlp = StanfordNLP.apply("normalize")
     val times = XML.loadString(nlp.normalize(text, date)) \\ "TIMEX3"
     println(times.size)
     for (time <- times)
