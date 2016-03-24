@@ -5,7 +5,6 @@ import java.util.regex.Pattern
 
 import cc.mallet.fst.SimpleTagger.SimpleTaggerSentence2FeatureVectorSequence
 import cc.mallet.fst.{CRF, CRFTrainerByLabelLikelihood, MaxLatticeDefault, Transducer}
-import cc.mallet.optimize.OptimizationException
 import cc.mallet.pipe.Pipe
 import cc.mallet.pipe.iterator.{LineGroupIterator, StringArrayIterator}
 import cc.mallet.types.{FeatureVectorSequence, InstanceList}

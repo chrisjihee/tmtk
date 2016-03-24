@@ -27,12 +27,13 @@ libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.6.0"
 libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.6.0" classifier "models-english"
 libraryDependencies += "edu.washington.cs.knowitall.ollie" % "ollie-core_2.10" % "1.0.3"
 libraryDependencies += "edu.washington.cs.knowitall.nlptools" % "nlptools-parse-malt_2.10" % "2.4.5"
-libraryDependencies += "de.tudarmstadt.ukp.wikipedia" % "de.tudarmstadt.ukp.wikipedia.api" % "1.0.0" exclude("net.sf.trove4j", "trove4j")
+libraryDependencies += "de.tudarmstadt.ukp.wikipedia" % "de.tudarmstadt.ukp.wikipedia.api" % "1.0.0"
 libraryDependencies += "org.apache.lucene" % "lucene-core" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-analyzers-common" % "5.5.0"
 libraryDependencies += "org.apache.lucene" % "lucene-queryparser" % "5.5.0"
 libraryDependencies += "nz.ac.waikato.cms.weka" % "weka-dev" % "3.7.13"
-libraryDependencies += "cc.mallet" % "mallet" % "2.0.7" exclude("jgrapht", "jgrapht")
+
+unmanagedResourceDirectories in Compile += { baseDirectory.value / "src/main/scala" }
 
 assemblyMergeStrategy in assembly := getStrategy
 Project.inConfig(Test)(baseAssemblySettings ++ Seq(assemblyMergeStrategy in assembly := getStrategy))

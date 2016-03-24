@@ -21,13 +21,13 @@ package object ml {
     val data2 = Array("You/PRP/NP do/VBP/O not/RB/O eat/VB/O apple/NN/NP ././O", "But/CC/O Mary/NNP/NP loves/VBZ/O it/PRP/NP ././O")
 
     val ml = new MalletCRF
-    //ml.setTrainData("data3/NP1.txt")
-    //ml.setTestData("data3/NP2.txt")
     ml.setTrainData(data1.map(x => x.replace(" ", "\n").replace("/", " ")))
+    ml.setTrainData("data3/NP1.txt")
     ml.train(10000)
 
     ml.setTestData(data2.map(x => x.replace(" ", "\n").replace("/", " ")))
-    println("OUTPUTs------------------")
+    ml.setTestData("data3/NP2.txt")
+    println("-Sequence Tagging Output---------------------------------------------------")
     for ((input, outputs) <- ml.test(1)) {
       val output = outputs(0)
       for (i <- 0 until input.size)

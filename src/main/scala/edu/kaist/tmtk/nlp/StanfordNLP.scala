@@ -4,6 +4,7 @@ import java.util.Properties
 
 import edu.kaist.tmtk.{log, quite2}
 import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
+import edu.stanford.nlp.time.SUTimeMain
 
 import scala.collection.mutable.{LinkedHashMap => Map}
 
@@ -12,13 +13,14 @@ class StanfordNLP(components: String, lv: AnyRef = "W", q: Boolean = true, conf:
   "pos.maxlen" -> "120",
   "parse.maxlen" -> "120"
 )) {
-  val analyzer = quite2(() => new StanfordCoreNLP({
-    val p = new Properties
-    p.setProperty("annotators", components)
-    for ((k, v) <- conf)
-      p.setProperty(k, v)
-    p
-  }), q)
+  private val components2 = components.split(",").map(_.toLowerCase.trim).toList
+  private val vannotators = "tokenize|cleanxml|ssplit|pos|lemma|ner|regexner|sentiment|truecase|parse|depparse|dcoref|relation|natlog|quote".split("\\|").toList
+  val prop = new Properties
+  prop.setProperty("annotators", components2.filter(vannotators.contains).mkString(", "))
+  for ((k, v) <- conf)
+    prop.setProperty(k, v)
+  val analyzer = quite2(() => new StanfordCoreNLP(prop), q)
+  val normalizer = if (components2.contains("normalize")) quite2(() => SUTimeMain.getPipeline(prop, true), q) else null
   override val toString = s"StanfordNLP($components)"
   log(s"[DONE] Load $this", lv)
 
@@ -28,6 +30,9 @@ class StanfordNLP(components: String, lv: AnyRef = "W", q: Boolean = true, conf:
     analyzer.annotate(annotation)
     annotation
   }
+
+  def normalize(text: String, date: String) =
+    SUTimeMain.textToAnnotatedXml(normalizer, text, date)
 }
 
 object StanfordNLP {

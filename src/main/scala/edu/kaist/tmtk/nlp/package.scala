@@ -196,25 +196,30 @@ package object nlp {
   })
 
   def testStanfordNLP(text: String) = test(method, () => {
-    val nlp = new StanfordNLP("tokenize, ssplit, pos, lemma, ner, parse, depparse, dcoref")
-    for (sentence <- nlp.analyze(text).sentences) {
-      val tokens = sentence.tokens.map(_.word)
-      warn(s" + [   Tokenized] ${tokens.mkString(" ")}")
-      val lemmas = sentence.tokens.map(_.lemma)
-      warn(s"   - [Lemmatized] ${lemmas.mkString(" ")}")
-      val tags = sentence.tokens.map(_.tag)
-      val postagged = tokens.zip(tags).map(x => s"${x._1}/${x._2}")
-      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
-      val ners = sentence.tokens.map(_.ner)
-      val recognized = tokens.zip(ners).map(x => s"${x._1}/${x._2}")
-      warn(s"   - [Recognized] ${recognized.mkString(" ")}")
-      val lexparsed = sentence.tree
-      warn(s"   - [Lex-Parsed] $lexparsed")
-      val depparsed = sentence.deps
-      val deps = depparsed.toList.split("\n")
-      warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
-      warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
-    }
+    val text = "Last summer, they met every Tuesday afternoon, from 1 pm to 3 pm. I went to school yesterday. I will come back two weeks later."
+    val date = "2016-01-01"
+    val nlp = new StanfordNLP("normalize")
+    val res = nlp.normalize(text, date)
+    println(res)
+//    val nlp = new StanfordNLP("tokenize, ssplit, pos, lemma, ner, parse, depparse, dcoref")
+//    for (sentence <- nlp.analyze(text).sentences) {
+//      val tokens = sentence.tokens.map(_.word)
+//      warn(s" + [   Tokenized] ${tokens.mkString(" ")}")
+//      val lemmas = sentence.tokens.map(_.lemma)
+//      warn(s"   - [Lemmatized] ${lemmas.mkString(" ")}")
+//      val tags = sentence.tokens.map(_.tag)
+//      val postagged = tokens.zip(tags).map(x => s"${x._1}/${x._2}")
+//      warn(s"   - [POS-Tagged] ${postagged.mkString(" ")}")
+//      val ners = sentence.tokens.map(_.ner)
+//      val recognized = tokens.zip(ners).map(x => s"${x._1}/${x._2}")
+//      warn(s"   - [Recognized] ${recognized.mkString(" ")}")
+//      val lexparsed = sentence.tree
+//      warn(s"   - [Lex-Parsed] $lexparsed")
+//      val depparsed = sentence.deps
+//      val deps = depparsed.toList.split("\n")
+//      warn(s"   - [Dep-Parsed] ${deps.mkString(" / ")}")
+//      warn(s"   - [Dep-Parsed] \n${depparsed.toString.trim}")
+//    }
   })
 
   def testClearNLP(text: String) = test(method, () => {
