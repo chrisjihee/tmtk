@@ -34,7 +34,6 @@ libraryDependencies += "org.apache.lucene" % "lucene-queryparser" % "5.5.0"
 libraryDependencies += "nz.ac.waikato.cms.weka" % "weka-dev" % "3.7.13"
 
 unmanagedResourceDirectories in Compile += { baseDirectory.value / "src/main/scala" }
-
 assemblyMergeStrategy in assembly := getStrategy
 Project.inConfig(Test)(baseAssemblySettings ++ Seq(assemblyMergeStrategy in assembly := getStrategy))
 def getStrategy(path: String) = path match {
@@ -44,9 +43,7 @@ def getStrategy(path: String) = path match {
   case PathList("edu", "emory", "clir", _*) => MergeStrategy.first
   case PathList("edu", "stanford", "nlp", _*) => MergeStrategy.first
   case PathList("org", "joda", "time", _*) => MergeStrategy.first
-  case PathList("opennlp", _*) => MergeStrategy.first
-  case PathList("hannanum", _*) => MergeStrategy.first
-  case PathList("maltparser", _*) => MergeStrategy.first
+  case PathList("edu", "knowitall", _*) => MergeStrategy.first
   case PathList(x@_*) if x.size > 1 && x.last.matches(".+[.](properties|xml|xsd|properties|txt)") => MergeStrategy.first
   case _ => MergeStrategy.discard
 }

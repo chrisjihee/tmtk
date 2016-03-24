@@ -22,8 +22,9 @@ class OpenIE(lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Ma
   def extract(sentence: String) = {
     val tagged = parser.postagger.postag(sentence)
     val parsed = parser.dependencyGraphPostagged(tagged)
-    for (e <- extractor.extract(parsed)) yield
+    val extracted = for (e <- extractor.extract(parsed)) yield
       new Extraction(e.extraction.arg1.text, e.extraction.rel.text, e.extraction.arg2.text, e.extraction.attribution.map(_.text).orNull, e.extraction.enabler.map(_.text).orNull, confidence(e))
+    extracted.toSeq
   }
 }
 
