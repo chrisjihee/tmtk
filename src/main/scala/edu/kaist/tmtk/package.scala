@@ -383,6 +383,8 @@ package object tmtk {
       })
       jobs(n).start()
     }
+
+    numDone.get
   }
 
   def main(args: Array[String]) {
@@ -398,19 +400,23 @@ package object tmtk {
     val conf = new ArrayBuffer[String]
 
     conf += "multi=1"
-    test("assign1", () => assign(data, square, multi = 1, interval = 20))
+    lazy val done1 = test("assign1", () => assign(data, square, multi = 1, interval = 20))
+    warn(s"[DONE] process $done1 numbers")
     conf.clear
 
     conf += "multi=2"
-    test("assign2", () => assign(data, square, multi = 2, interval = 20))
+    lazy val done2 = test("assign2", () => assign(data, square, multi = 2, interval = 20))
+    warn(s"[DONE] process $done2 numbers")
     conf.clear
 
     conf += "multi=5"
-    test("assign3", () => assign(data, square, multi = 5, interval = 20))
+    lazy val done3 = test("assign3", () => assign(data, square, multi = 5, interval = 20))
+    warn(s"[DONE] process $done3 numbers")
     conf.clear
 
     conf += "multi=10"
-    test("assign4", () => assign(data, square, multi = 10, interval = 20))
+    lazy val done4 = test("assign4", () => assign(data, square, multi = 10, interval = 20))
+    warn(s"[DONE] process $done4 numbers")
     conf.clear
 
     def square(d: Int, post: ArrayBuffer[String]) = {
