@@ -394,7 +394,7 @@ package object tmtk {
 
   def testAssign() = test(method, () => {
     val data = Stream.iterate(1)(x => x + 1).take(100)
-    val out = new MySQL("143.248.48.105/unit", "admin", "admin1", "assigner", "i int auto_increment, t timestamp default current_timestamp, data int, conf varchar(50), result int, primary key(i)")
+    val out = new MySQL("143.248.48.105/unit", "chrisjihee", "jiheeryu", "assigner", "i int auto_increment, t timestamp default current_timestamp, data int, conf varchar(50), result int, primary key(i)")
     val conf = new ArrayBuffer[String]
 
     conf += "multi=1"

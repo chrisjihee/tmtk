@@ -118,7 +118,7 @@ package object kb {
   }
 
   def testWikidata() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/enwiki", "admin", "admin1", "english")
+    val kb = new Wikipedia("143.248.48.105/enwiki", "chrisjihee", "jiheeryu", "english")
     val labels = List(5, 6256, 34770, 515, 4022, 4830453, 11424) // human, country, language, city, river, business enterprise, film
     File("target/data").jfile.mkdirs()
 
@@ -145,7 +145,7 @@ package object kb {
   })
 
   def testWikipediaE() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/enwiki", "admin", "admin1", "english")
+    val kb = new Wikipedia("143.248.48.105/enwiki", "chrisjihee", "jiheeryu", "english")
 
     warn("  + Pages by IDs")
     for {
@@ -167,7 +167,7 @@ package object kb {
   })
 
   def testWikipediaK() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/kowiki", "admin", "admin1", "korean")
+    val kb = new Wikipedia("143.248.48.105/kowiki", "chrisjihee", "jiheeryu", "korean")
 
     warn("  + Pages by IDs")
     for {
