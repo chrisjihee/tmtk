@@ -17,7 +17,7 @@ class MySQL(path: String, var table: String = null, var schema: String = null, l
   private val Array(host, name) = path2.split("/")
   val connection = DriverManager.getConnection(s"jdbc:mysql://$host", user, pswd)
   val session = connection.createStatement()
-  session.execute(s"CREATE DATABASE IF NOT EXISTS $name")
+  session.execute(s"CREATE DATABASE IF NOT EXISTS $name DEFAULT CHARACTER SET utf8")
   session.execute(s"USE $name")
   if (table != null && schema != null)
     create(schema)
