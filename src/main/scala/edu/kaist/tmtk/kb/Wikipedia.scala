@@ -7,8 +7,10 @@ import edu.kaist.tmtk.quite1
 
 import scala.collection.JavaConversions.iterableAsScalaIterable
 
-class Wikipedia(path: String, user: String, pswd: String, lang: String) {
-  private val Array(host, name) = path.split("/")
+class Wikipedia(path: String, lang: String) {
+  private val Array(user0, path2) = path.split("@")
+  private val Array(user, pswd) = user0.split(":")
+  private val Array(host, name) = path2.split("/")
   private val lang2 = Language.valueOf(lang)
   val w = new de.tudarmstadt.ukp.wikipedia.api.Wikipedia(new DatabaseConfiguration(host, name, user, pswd, lang2))
   override val toString = s"Wikipedia($lang)"

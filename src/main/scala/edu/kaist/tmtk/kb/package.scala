@@ -117,8 +117,52 @@ package object kb {
     }
   }
 
+  def testWikipediaE() = test(method, () => {
+    val kb = new Wikipedia("chrisjihee:jiheeryu@143.248.48.105/enwiki", "english")
+
+    warn("  + Pages by IDs")
+    for {
+      i <- Seq(12, 25, 39, 290, 303)
+      p = kb.getPage(i) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+
+    warn("  + Pages by titles")
+    for {
+      t <- "USA, UK, Korea, KAIST, Anarchist, Anarchists (disambiguation)".split(", ")
+      p = kb.getPage(t) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+  })
+
+  def testWikipediaK() = test(method, () => {
+    val kb = new Wikipedia("chrisjihee:jiheeryu@143.248.48.105/kowiki", "korean")
+
+    warn("  + Pages by IDs")
+    for {
+      i <- Seq(5, 9, 10, 19, 20)
+      p = kb.getPage(i) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+
+    warn("  + Pages by titles")
+    for {
+      t <- "초월수, 대수적 수, KAIST, 카이스트, 한국과학기술원".split(", ")
+      p = kb.getPage(t) if p != null
+      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
+      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
+      first = text.split("\n").head
+    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
+  })
+
   def testWikidata() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/enwiki", "chrisjihee", "jiheeryu", "english")
+    val kb = new Wikipedia("chrisjihee:jiheeryu@143.248.48.105/enwiki", "english")
     val labels = List(5, 6256, 34770, 515, 4022, 4830453, 11424) // human, country, language, city, river, business enterprise, film
     File("target/data").jfile.mkdirs()
 
@@ -142,49 +186,5 @@ package object kb {
         }
       }
     }
-  })
-
-  def testWikipediaE() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/enwiki", "chrisjihee", "jiheeryu", "english")
-
-    warn("  + Pages by IDs")
-    for {
-      i <- Seq(12, 25, 39, 290, 303)
-      p = kb.getPage(i) if p != null
-      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
-      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
-      first = text.split("\n").head
-    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
-
-    warn("  + Pages by titles")
-    for {
-      t <- "USA, UK, Korea, KAIST, Anarchist, Anarchists (disambiguation)".split(", ")
-      p = kb.getPage(t) if p != null
-      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
-      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
-      first = text.split("\n").head
-    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
-  })
-
-  def testWikipediaK() = test(method, () => {
-    val kb = new Wikipedia("143.248.48.105/kowiki", "chrisjihee", "jiheeryu", "korean")
-
-    warn("  + Pages by IDs")
-    for {
-      i <- Seq(5, 9, 10, 19, 20)
-      p = kb.getPage(i) if p != null
-      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
-      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
-      first = text.split("\n").head
-    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
-
-    warn("  + Pages by titles")
-    for {
-      t <- "초월수, 대수적 수, KAIST, 카이스트, 한국과학기술원".split(", ")
-      p = kb.getPage(t) if p != null
-      (id, title, text) = (p.getPageId, p.getTitle, p.getLinkedText)
-      (isDsm, isDsc, isRdr) = (p.isDisambiguation.asInt, p.isDiscussion.asInt, p.isRedirect.asInt)
-      first = text.split("\n").head
-    } warn(s"    - [$id] $title($isDsm/$isDsc/$isRdr) = $first")
   })
 }
