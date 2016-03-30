@@ -13,7 +13,7 @@ package object db {
   }
 
   def testMySQL() = test(method, () => {
-    for (db <- new MySQL("143.248.48.105/unit", "chrisjihee", "jiheeryu", "samples", "i int, name varchar(20), primary key(i)").manage()) {
+    for (db <- new MySQL("chrisjihee:jiheeryu@143.248.48.105/unit", "samples", "i int, name varchar(20), primary key(i)").manage()) {
       warn(s" + [DB] $db")
       db.update("DELETE FROM samples WHERE i<=?", 1000)
       for (r <- Map("i" -> 1, "name" -> "A") :: Map("i" -> 2, "name" -> "B") :: Map("i" -> 3, "name" -> "C") :: Nil)

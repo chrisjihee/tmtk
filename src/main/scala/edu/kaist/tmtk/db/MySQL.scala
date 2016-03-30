@@ -11,13 +11,18 @@ import resource.managed
 import scala.collection.JavaConversions.iterableAsScalaIterable
 import scala.collection.Map
 
-class MySQL(path: String, user: String, pswd: String, var table: String = null, var schema: String = null, lv: AnyRef = "I") extends Closeable {
-  val connection = DriverManager.getConnection(s"jdbc:mysql://$path", user, pswd)
+class MySQL(path: String, var table: String = null, var schema: String = null, lv: AnyRef = "I") extends Closeable {
+  private val Array(user0, path2) = path.split("@")
+  private val Array(user, pswd) = user0.split(":")
+  private val Array(host, name) = path2.split("/")
+  val connection = DriverManager.getConnection(s"jdbc:mysql://$host", user, pswd)
   val session = connection.createStatement()
-  lazy val runner = new QueryRunner
+  session.execute(s"CREATE DATABASE IF NOT EXISTS $name")
+  session.execute(s"USE $name")
   if (table != null && schema != null)
     create(schema)
-  override val toString = s"MySQL($path/${table.asStr("")})"
+  override val toString = s"MySQL($host/$name/${table.asStr("")})"
+  lazy val runner = new QueryRunner
   log(s"[DONE] Connect $this", lv)
 
   override def close() = connection.close()
