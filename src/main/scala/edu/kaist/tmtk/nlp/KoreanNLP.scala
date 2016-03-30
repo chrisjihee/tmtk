@@ -35,7 +35,10 @@ class KoreanNLP(addr: String, lv: AnyRef = "I") {
     analyze(text).sentences.flatMap(_.morp.map(_.lemma))
 
   def detect(text: String) =
-    analyze(text).sentences.map(_.text)
+    analyze(text).sentences.map(_.text.trim)
+
+  def detectAndTag(text: String) =
+    analyze(text).sentences.map(x => x.text.trim + "\t" + x.morp.mkString(" "))
 
   def tag(text: String) =
     analyze(text).sentences.flatMap(_.morp.map(x => x.lemma + "/" + x.`type`))
