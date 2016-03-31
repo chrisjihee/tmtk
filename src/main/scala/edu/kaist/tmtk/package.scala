@@ -282,12 +282,12 @@ package object tmtk {
 
   val clocks = new TrieMap[String, Instant]
 
-  def init(key: String = method(4), lv: AnyRef = WARN, lg: Logger = logger, marker: String = "[INIT]") = {
+  def init(key: String = method(4), lv: AnyRef = WARN, marker: String = "[INIT]", lg: Logger = logger) = {
     clocks += key -> Instant.now
     log(s"$marker $key", lv, lg)
   }
 
-  def exit(key: String = method(4), post: String = "", lv: AnyRef = WARN, lg: Logger = logger, marker: String = "[EXIT]") = {
+  def exit(key: String = method(4), post: String = "", lv: AnyRef = WARN, marker: String = "[EXIT]", lg: Logger = logger) = {
     if (clocks.contains(key)) {
       val from = clocks(key)
       log(s"$marker $key in ${elapsed(from)}$post", lv, lg)
@@ -344,7 +344,7 @@ package object tmtk {
   def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 10 #:: 20 #:: Stream(30)) =
     seconds.map(connect(host, port, _)).dropWhile(_ == null).headOption.orNull
 
-  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0) = {
+  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0, exitM: String = "[EXIT]", initM: String = "[INIT]") = {
     val (sleepTimeNext, sleepTimeLast) = (0, 0)
     val (numInit, numDone) = (new AtomicLong(offset), new AtomicLong)
     val jobs = new TrieMap[String, Thread]
@@ -364,9 +364,9 @@ package object tmtk {
 
     def handle1(d: D, n: String = name(numInit.incrementAndGet)) {
       val ms = new ArrayBuffer[String]
-      init(n, "D")
+      init(n, "D", initM)
       f(d, ms)
-      exit(n, str(ms), done)
+      exit(n, str(ms), done, exitM)
     }
 
     def handle2(d: D, n: String = name(numInit.incrementAndGet)) {
@@ -375,9 +375,9 @@ package object tmtk {
         Thread.sleep(sleepTimeNext)
       jobs += n -> new Thread(new Runnable {
         override def run(): Unit = {
-          init(n, "D")
+          init(n, "D", initM)
           f(d, ms)
-          exit(n, str(ms), done)
+          exit(n, str(ms), done, exitM)
           jobs -= n
         }
       })

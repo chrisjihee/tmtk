@@ -58,15 +58,17 @@ class Cassandra(path: String, var table: String = null, var schema: String = nul
   def count(query: String, args: Any*) =
     session.execute(new SimpleStatement("SELECT COUNT(*) FROM " + query, args.map(_.asInstanceOf[AnyRef]): _*)).one.getLong(0)
 
-  def one(query: String, args: Any*) =
-    session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*)).one.getObject(0)
+  def one(query: String, args: Any*) = {
+    val r = session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*)).one
+    Option(r).map(_.getObject(0)).orNull
+  }
 
   def ones(query: String, args: Any*) =
     session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*)).map(x => x.getObject(0)).toList
 
   def row(query: String, args: Any*) = {
     val r = session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*)).one
-    r.getColumnDefinitions.toSeq.indices.toList.map(r.getObject)
+    Option(r).map(r => r.getColumnDefinitions.toSeq.indices.toList.map(r.getObject)).orNull
   }
 
   def rows(query: String, args: Any*) = {
@@ -76,7 +78,7 @@ class Cassandra(path: String, var table: String = null, var schema: String = nul
 
   def map(query: String, args: Any*) = {
     val r = session.execute(new SimpleStatement(query, args.map(_.asInstanceOf[AnyRef]): _*)).one
-    ListMap(r.getColumnDefinitions.map(_.getName).map(k => k -> r.getObject(k)).toSeq: _*)
+    Option(r).map(r => ListMap(r.getColumnDefinitions.map(_.getName).map(k => k -> r.getObject(k)).toSeq: _*)).orNull
   }
 
   def maps(query: String, args: Any*) = {

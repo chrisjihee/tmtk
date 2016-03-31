@@ -21,7 +21,6 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   }
   lazy val writer = new IndexWriter(FSDirectory.open(path2.toPath), new IndexWriterConfig(analyzer))
   lazy val searcher = new IndexSearcher(DirectoryReader.open(writer))
-  lazy val parser = new QueryParser("X", analyzer)
   override val toString = s"Lucene($path with ${analyzer.getClass.getSimpleName})"
 
   override def close() = {
@@ -38,14 +37,15 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
 
   def insert(row: Map[String, Any]) = {
     val d = new Document
-    for ((k, v) <- row) d.add(v match {
-      case x: Int => new IntField(k, x, YES)
-      case x: Long => new LongField(k, x, YES)
-      case x: Float => new FloatField(k, x, YES)
-      case x: Double => new DoubleField(k, x, YES)
-      case x: String if k.startsWith("t_") => new TextField(k, x, YES)
-      case x: String if !k.startsWith("t_") => new StringField(k, x, YES)
-    })
+    for ((k, v) <- row)
+      d.add(v match {
+        case x: Int => new IntField(k, x, YES)
+        case x: Long => new LongField(k, x, YES)
+        case x: Float => new FloatField(k, x, YES)
+        case x: Double => new DoubleField(k, x, YES)
+        case x: String if k.startsWith("t_") => new TextField(k, x, YES)
+        case x: String if !k.startsWith("t_") => new StringField(k, x, YES)
+      })
     writer.addDocument(d)
   }
 
@@ -55,7 +55,7 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   }
 
   private def format(query: String, args: Seq[Any]) =
-    parser.parse(query.replace("?", "%s").trim.format(args: _*))
+    new QueryParser("X", analyzer).parse(query.replace("?", "%s").trim.format(args: _*))
 
   def size = count("*:*")
 
