@@ -55,7 +55,7 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   }
 
   private def format(query: String, args: Seq[Any]) =
-    new QueryParser("X", analyzer).parse(query.replace("?", "%s").trim.format(args: _*))
+    new QueryParser("X", analyzer).parse(query.replace("%", "%%").replace("<?>", "%s").trim.format(args: _*))
 
   def size = count("*:*")
 
