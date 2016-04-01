@@ -295,14 +295,14 @@ package object tmtk {
     }
   }
 
-  def test(name: String = method(3), f: () => Any = null, logfile: String = null) = {
+  def test(name: String = method(3), f: () => Any = null, logfile: String = null, initM: String = "[INIT]", exitM: String = "[EXIT]") = {
     if (logfile != null)
       changeLogfile(logfile)
-    init(name)
+    init(name, "W", initM)
     var r: Any = null
     if (f != null)
       r = f()
-    exit(name)
+    exit(name, "", "W", exitM)
     r
   }
 
@@ -344,7 +344,7 @@ package object tmtk {
   def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 10 #:: 20 #:: Stream(30)) =
     seconds.map(connect(host, port, _)).dropWhile(_ == null).headOption.orNull
 
-  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0, exitM: String = "[EXIT]", initM: String = "[INIT]") = {
+  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0, initM: String = "[INIT]", exitM: String = "[EXIT]") = {
     val (sleepTimeNext, sleepTimeLast) = (0, 0)
     val (numInit, numDone) = (new AtomicLong(offset), new AtomicLong)
     val jobs = new TrieMap[String, Thread]
