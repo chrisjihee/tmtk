@@ -23,6 +23,9 @@ package object ir {
     def apply(name: String) =
       x.getField(name).value
 
+    def values(names: Iterable[String]) =
+      names.map(x.getField).map(_.value)
+
     def values =
       x.getFields.map(_.value)
 
@@ -33,7 +36,7 @@ package object ir {
   def main(args: Array[String]) {
     args.at(0, null) match {
       case "Lucene" => testLucene()
-      case _ =>
+      case _ => test("edu.kaist.tmtk.ir")
     }
   }
 
@@ -51,9 +54,9 @@ package object ir {
       warn(s"   -  one : $a1")
       val a2 = ir.ones(10, "name", "t_text:<?>", "good")
       warn(s"   - ones : ${a2.mkString(", ")}")
-      val List(i, n, t, s) = ir.row("t_text:<?>", "eyesight")
+      val Seq(i, n, t, s) = ir.row("*", "t_text:<?>", "eyesight")
       warn(s"   -  row : $i->($n, $t) ($s)")
-      val a4 = for (List(i, n, t, s) <- ir.rows(10, "t_text:<?>", "good")) yield s"$i->($n, $t) ($s)"
+      val a4 = for (Seq(i, n, t, s) <- ir.rows(10, "*", "t_text:<?>", "good")) yield s"$i->($n, $t) ($s)"
       warn(s"   - rows : ${a4.mkString(", ")}")
       val a5 = ir.map("t_text:<?>", "eyesight")
       warn(s"   -  map : $a5")

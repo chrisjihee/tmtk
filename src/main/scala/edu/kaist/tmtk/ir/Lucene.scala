@@ -62,21 +62,26 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   def count(query: String, args: Any*) =
     searcher.count(format(query, args))
 
-  def one(name: String, query: String, args: Any*) =
+  def one(field: String, query: String, args: Any*) =
     (for (d <- searcher.search(format(query, args), 1).scoreDocs.headOption)
-      yield searcher.doc(d.doc)(name)).orNull
+      yield searcher.doc(d.doc)(field)).orNull
 
-  def ones(k: Int, name: String, query: String, args: Any*) =
+  def ones(k: Int, field: String, query: String, args: Any*) =
     for (d <- searcher.search(format(query, args), k).scoreDocs.toStream)
-      yield searcher.doc(d.doc)(name)
+      yield searcher.doc(d.doc)(field)
 
-  def row(query: String, args: Any*) =
+  def row(fields: String, query: String, args: Any*) =
     (for (d <- searcher.search(format(query, args), 1).scoreDocs.headOption)
-      yield searcher.doc(d.doc).values ++ Seq(d.score)).orNull
+      yield
+        if (fields == "*") searcher.doc(d.doc).values ++ Seq(d.score)
+        else searcher.doc(d.doc).values(fields.split(",").map(_.trim)) ++ Seq(d.score)
+      ).orNull
 
-  def rows(k: Int, query: String, args: Any*) =
+  def rows(k: Int, fields: String, query: String, args: Any*) =
     for (d <- searcher.search(format(query, args), k).scoreDocs.toStream)
-      yield searcher.doc(d.doc).values ++ Seq(d.score)
+      yield
+        if (fields == "*") searcher.doc(d.doc).values ++ Seq(d.score)
+        else searcher.doc(d.doc).values(fields.split(",").map(_.trim)) ++ Seq(d.score)
 
   def map(query: String, args: Any*) =
     (for (d <- searcher.search(format(query, args), 1).scoreDocs.headOption)

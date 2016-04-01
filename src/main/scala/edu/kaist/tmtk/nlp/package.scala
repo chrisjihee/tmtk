@@ -176,7 +176,7 @@ package object nlp {
       case "ClearNLP" => testClearNLP(textE3)
       case "HannanumNLP" => testHannanumNLP(textK)
       case "KoreanNLP" => testKoreanNLP(textK)
-      case _ =>
+      case _ => test("edu.kaist.tmtk.nlp")
     }
   }
 

@@ -6,7 +6,7 @@ package object ie {
   def main(args: Array[String]) {
     args.at(0, null) match {
       case "OpenIE" => testOpenIE()
-      case _ =>
+      case _ => test("edu.kaist.tmtk.ie")
     }
   }
 

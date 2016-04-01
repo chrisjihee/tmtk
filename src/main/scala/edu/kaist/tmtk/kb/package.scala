@@ -113,7 +113,7 @@ package object kb {
       case "WikipediaE" => testWikipediaE()
       case "WikipediaK" => testWikipediaK()
       case "Wikidata" => testWikidata()
-      case _ =>
+      case _ => test("edu.kaist.tmtk.kb")
     }
   }
 

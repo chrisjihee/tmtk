@@ -8,7 +8,7 @@ package object db {
     args.at(0, null) match {
       case "MySQL" => testMySQL()
       case "Cassandra" => testCassandra()
-      case _ =>
+      case _ => test("edu.kaist.tmtk.db")
     }
   }
 

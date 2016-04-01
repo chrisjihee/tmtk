@@ -12,7 +12,7 @@ package object ml {
       case "Weka" => testWeka()
       case "LDA" => testLDA()
       case "CRF" => testCRF()
-      case _ =>
+      case _ => test("edu.kaist.tmtk.ml")
     }
   }
 

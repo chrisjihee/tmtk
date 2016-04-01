@@ -390,7 +390,7 @@ package object tmtk {
   def main(args: Array[String]) {
     args.at(0, null) match {
       case "assign" => testAssign()
-      case _ =>
+      case _ => test("edu.kaist.tmtk")
     }
   }
 
