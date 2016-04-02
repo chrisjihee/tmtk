@@ -373,14 +373,17 @@ package object tmtk {
       val ms = new ArrayBuffer[String]
       while (jobs.size >= multi)
         Thread.sleep(sleepTimeNext)
-      jobs += n -> new Thread(new Runnable {
-        override def run(): Unit = {
-          init(n, "D", initM)
-          f(d, ms)
-          exit(n, str(ms), done, exitM)
-          jobs -= n
-        }
-      })
+      jobs.synchronized {
+        jobs += n -> new Thread(new Runnable {
+          override def run(): Unit = {
+            init(n, "D", initM)
+            f(d, ms)
+            exit(n, str(ms), done, exitM)
+            jobs.synchronized(jobs -= n)
+            //jobs -= n
+          }
+        })
+      }
       jobs(n).start()
     }
 
