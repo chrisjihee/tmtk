@@ -23,14 +23,14 @@ package object ir {
     def apply(name: String) =
       x.getField(name).value
 
-    def values(names: Iterable[String]) =
+    def values(names: Seq[String]) =
       names.map(x.getField).map(_.value)
 
     def values =
-      x.getFields.map(_.value)
+      x.getFields.toSeq.map(_.value)
 
     def items =
-      x.getFields.map(_.item)
+      x.getFields.toSeq.map(_.item)
   }
 
   def main(args: Array[String]) {
