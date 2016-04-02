@@ -1,5 +1,5 @@
 # tmtk
-This is a toolkit for text mining applications.
+This is a toolkit for text mining applications written in Scala or Java.
 
 ### Release History
 | Version  | Date       | Change                                         |
