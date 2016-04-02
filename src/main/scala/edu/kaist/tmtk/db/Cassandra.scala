@@ -18,7 +18,7 @@ class Cassandra(path: String, var table: String = null, var schema: String = nul
   session.execute(s"USE $name")
   if (table != null && schema != null)
     create(schema, order)
-  override val toString = s"Cassandra($path/${table.asStr("")})"
+  override val toString = s"Cassandra($host/$name/${table.asStr("")})"
   log(s"[DONE] Connect $this", lv)
 
   override def close() = connection.close()
