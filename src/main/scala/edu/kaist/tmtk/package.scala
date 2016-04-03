@@ -299,9 +299,7 @@ package object tmtk {
     if (logfile != null)
       changeLogfile(logfile)
     init(name, "W", initM)
-    var r: Any = null
-    if (f != null)
-      r = f()
+    val r = if (f != null) f() else null
     exit(name, "", "W", exitM)
     r
   }
