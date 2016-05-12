@@ -2,9 +2,10 @@ package edu.kaist.tmtk.ir
 
 import java.io.{Closeable, File}
 
+import edu.kaist.tmtk._
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Field.Store.YES
-import org.apache.lucene.document.{Document, DoubleField, FloatField, IntField, LongField, StringField, TextField}
+import org.apache.lucene.document._
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig}
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
@@ -12,7 +13,6 @@ import org.apache.lucene.store.FSDirectory
 import resource.managed
 
 import scala.collection.Map
-import scala.collection.immutable.ListMap
 
 class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
   val path2 = path match {
@@ -85,9 +85,9 @@ class Lucene(path: Any, analyzer: Analyzer) extends Closeable {
 
   def map(query: String, args: Any*) =
     (for (d <- searcher.search(format(query, args), 1).scoreDocs.headOption)
-      yield ListMap(searcher.doc(d.doc).items.toSeq ++ Seq("score" -> d.score): _*)).orNull
+      yield XMap(searcher.doc(d.doc).items ++ Seq("score" -> d.score): _*)).orNull
 
   def maps(k: Int, query: String, args: Any*) =
     for (d <- searcher.search(format(query, args), k).scoreDocs.toStream)
-      yield ListMap(searcher.doc(d.doc).items.toSeq ++ Seq("score" -> d.score): _*)
+      yield XMap(searcher.doc(d.doc).items ++ Seq("score" -> d.score): _*)
 }

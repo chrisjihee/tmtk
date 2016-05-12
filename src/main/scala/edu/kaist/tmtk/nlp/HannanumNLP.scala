@@ -2,7 +2,7 @@ package edu.kaist.tmtk.nlp
 
 import java.io.Closeable
 
-import edu.kaist.tmtk.log
+import edu.kaist.tmtk._
 import kr.ac.kaist.swrc.jhannanum.comm.{PlainSentence, Sentence}
 import kr.ac.kaist.swrc.jhannanum.hannanum.Workflow
 import kr.ac.kaist.swrc.jhannanum.plugin.MajorPlugin.MorphAnalyzer.ChartMorphAnalyzer.ChartMorphAnalyzer
@@ -12,9 +12,8 @@ import kr.ac.kaist.swrc.jhannanum.plugin.SupplementPlugin.PlainTextProcessor.Sen
 import kr.ac.kaist.swrc.jhannanum.plugin.SupplementPlugin.PosProcessor.SimplePOSResult22.SimplePOSResult22
 
 import scala.collection.JavaConversions.iterableAsScalaIterable
-import scala.collection.immutable.ListMap
 
-class HannanumNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = ListMap(
+class HannanumNLP(components: String, lv: AnyRef = "W", conf: AMap[String, String] = XMap(
   "morp.json" -> "rsc/hannanum/ChartMorphAnalyzer.json",
   "pos.json" -> "rsc/hannanum/HmmPosTagger.json"
 )) extends Closeable {

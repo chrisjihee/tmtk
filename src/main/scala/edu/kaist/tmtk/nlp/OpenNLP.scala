@@ -1,6 +1,6 @@
 package edu.kaist.tmtk.nlp
 
-import edu.kaist.tmtk.{findFile, log}
+import edu.kaist.tmtk._
 import edu.stanford.nlp.util.CoreMap
 import opennlp.tools.chunker.{ChunkerME, ChunkerModel}
 import opennlp.tools.cmdline.parser.ParserTool
@@ -10,9 +10,7 @@ import opennlp.tools.postag.{POSModel, POSTaggerME}
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
 import opennlp.tools.tokenize.{TokenizerME, TokenizerModel}
 
-import scala.collection.immutable.ListMap
-
-class OpenNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = ListMap(
+class OpenNLP(components: String, lv: AnyRef = "W", conf: AMap[String, String] = XMap(
   "sent.model" -> "opennlp/en-sent.bin",
   "tok.model" -> "opennlp/en-token.bin",
   "pos.model" -> "opennlp/en-pos-maxent.bin",

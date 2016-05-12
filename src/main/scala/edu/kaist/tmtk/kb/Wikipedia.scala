@@ -1,11 +1,9 @@
 package edu.kaist.tmtk.kb
 
 import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language
-import de.tudarmstadt.ukp.wikipedia.api.exception.WikiPageNotFoundException
+import de.tudarmstadt.ukp.wikipedia.api.exception.{WikiPageNotFoundException, WikiTitleParsingException}
 import de.tudarmstadt.ukp.wikipedia.api.{DatabaseConfiguration, Page}
 import edu.kaist.tmtk.quite1
-
-import scala.collection.JavaConversions.iterableAsScalaIterable
 
 class Wikipedia(path: String, lang: String) {
   private val Array(user0, path2) = path.split("@")
@@ -18,7 +16,8 @@ class Wikipedia(path: String, lang: String) {
   def getPage(title: String, exactly: Boolean = false) = try {
     quite1(() => new Page(w, title, exactly))
   } catch {
-    case e: WikiPageNotFoundException => null
+    case _: WikiPageNotFoundException => null
+    case _: WikiTitleParsingException => null
   }
 
   def getPage(nid: Int) = w.getPage(nid)

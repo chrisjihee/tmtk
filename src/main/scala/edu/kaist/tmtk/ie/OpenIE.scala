@@ -1,13 +1,11 @@
 package edu.kaist.tmtk.ie
 
-import edu.kaist.tmtk.{findFile, log, quite2}
+import edu.kaist.tmtk._
 import edu.knowitall.ollie.Ollie
 import edu.knowitall.ollie.confidence.OllieConfidenceFunction
 import edu.knowitall.tool.parse.MaltParser
 
-import scala.collection.mutable.{LinkedHashMap => Map}
-
-class OpenIE(lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Map("dep.model" -> "maltparser/engmalt.linear-1.7.mco")) {
+class OpenIE(lv: AnyRef = "W", q: Boolean = true, conf: AMap[String, String] = XMap("dep.model" -> "maltparser/engmalt.linear-1.7.mco")) {
   System.setProperty("Malt.verbosity", "WARN")
   val parser = quite2(() => new MaltParser(findFile(conf("dep.model")).toURL), q)
   val extractor = new Ollie

@@ -1,18 +1,15 @@
 package edu.kaist.tmtk.nlp
 
-import java.util.{List => JList}
-
 import edu.emory.clir.clearnlp.component.mode.dep.DEPConfiguration
 import edu.emory.clir.clearnlp.component.mode.srl.SRLConfiguration
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.{DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage.ENGLISH
-import edu.kaist.tmtk.{log, toInputStream}
+import edu.kaist.tmtk._
 
 import scala.collection.JavaConversions.{iterableAsScalaIterable, seqAsJavaList}
-import scala.collection.mutable.{LinkedHashMap => Map}
 
-class ClearNLP(components: String, lv: AnyRef = "W", conf: Map[String, String] = Map(
+class ClearNLP(components: String, lv: AnyRef = "W", conf: AMap[String, String] = XMap(
   "lexica" -> "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz",
   "gazetteer" -> "general-en-ner-gazetteer.xz",
   "pos.model" -> "general-en-pos.xz",

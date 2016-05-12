@@ -10,18 +10,15 @@ import resource.managed
 
 import scala.collection.JavaConversions._
 
-class MySQL(path: String, var table: String = null, var schema: String = null, user: String = null, pswd: String = null, reset: Boolean = false, lv: AnyRef = "I") extends Closeable {
-  private val Array(host, name) = path.split("/", 2)
-  val connection = DriverManager.getConnection(s"jdbc:mysql://$host", user, pswd)
+class HSQLDB(path: String, var table: String = null, var schema: String = null, user: String = null, pswd: String = null, reset: Boolean = false, lv: AnyRef = "I") extends Closeable {
+  val connection = DriverManager.getConnection(s"jdbc:hsqldb:$path", user, pswd)
   val session = connection.createStatement()
-  session.execute(s"CREATE DATABASE IF NOT EXISTS $name DEFAULT CHARACTER SET utf8")
-  session.execute(s"USE $name")
   if (table != null && schema != null)
     create(schema)
   lazy val runner = new QueryRunner
   log(s"[DONE] Connect $this", lv)
 
-  override def toString = s"MySQL($host/$name/${table.asStr("")})"
+  override def toString = s"HSQLDB($path/${table.asStr("")})"
 
   override def close() = connection.close()
 

@@ -8,9 +8,9 @@ import cc.mallet.pipe._
 import cc.mallet.pipe.iterator.FileIterator
 import cc.mallet.topics.ParallelTopicModel
 import cc.mallet.types.{FeatureSequence, IDSorter, InstanceList}
+import edu.kaist.tmtk._
 
 import scala.collection.JavaConversions._
-import scala.collection.immutable.ListMap
 
 class MalletLDA(data_dir: String) {
   var DEFAULT_NUM_KEYWORDS = 20
@@ -42,7 +42,7 @@ class MalletLDA(data_dir: String) {
     model.setNumThreads(1)
     model.estimate()
 
-    val wordDists = ListMap((for (i <- 0 until numCluster) yield {
+    val wordDists = XMap((for (i <- 0 until numCluster) yield {
       val words = for (info <- model.getSortedWords.get(i).toList) yield
         f"${model.alphabet.lookupObject(info.getID)}/${info.getWeight}%.0f"
       (i, words)
@@ -52,7 +52,7 @@ class MalletLDA(data_dir: String) {
       val result = model.data.get(id)
       val name = result.instance.getName.toString
       val input = result.instance.getData.asInstanceOf[FeatureSequence]
-      val counts = new util.LinkedHashMap[Int, Int]
+      val counts = new XMap[Int, Int]
       for (i <- 0 until numCluster)
         counts(i) = 0
       for (i <- result.topicSequence.getFeatures)

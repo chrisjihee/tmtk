@@ -2,13 +2,11 @@ package edu.kaist.tmtk.nlp
 
 import java.util.Properties
 
-import edu.kaist.tmtk.{log, quite2}
+import edu.kaist.tmtk._
 import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
 import edu.stanford.nlp.time.SUTimeMain
 
-import scala.collection.mutable.{LinkedHashMap => Map}
-
-class StanfordNLP(components: String, lv: AnyRef = "W", q: Boolean = true, conf: Map[String, String] = Map(
+class StanfordNLP(components: String, lv: AnyRef = "W", q: Boolean = true, conf: AMap[String, String] = XMap(
   "tokenize.class" -> "PTBTokenizer",
   "pos.maxlen" -> "120",
   "parse.maxlen" -> "120"

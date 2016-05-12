@@ -5,7 +5,7 @@ import edu.emory.clir.clearnlp.util.arc.SRLArc
 import edu.stanford.nlp.dcoref.CorefChain
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation
 import edu.stanford.nlp.international.Language
-import edu.stanford.nlp.ling.CoreAnnotations.{CharacterOffsetBeginAnnotation, SentenceIndexAnnotation, SentencesAnnotation, TextAnnotation, TokensAnnotation}
+import edu.stanford.nlp.ling.CoreAnnotations._
 import edu.stanford.nlp.ling.{CoreLabel, IndexedWord}
 import edu.stanford.nlp.pipeline.Annotation
 import edu.stanford.nlp.semgraph.SemanticGraph
@@ -18,7 +18,7 @@ import opennlp.tools.parser.Parse
 
 import scala.collection.JavaConversions.{asJavaCollection, iterableAsScalaIterable, mapAsJavaMap, mapAsScalaMap}
 import scala.collection.mutable
-import scala.xml.{NodeSeq, XML}
+import scala.xml.XML
 
 package object nlp {
 

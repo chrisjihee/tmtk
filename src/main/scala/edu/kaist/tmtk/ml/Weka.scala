@@ -1,9 +1,9 @@
 package edu.kaist.tmtk.ml
 
 import java.lang.{Double => JDouble, Integer => JInt}
-import java.util.{ArrayList => AList, List => JList}
+import java.util.{ArrayList => JArrayList}
 
-import edu.kaist.tmtk.AsValue
+import edu.kaist.tmtk._
 import weka.core.converters.ConverterUtils.{DataSink, DataSource}
 import weka.core.{Attribute, DenseInstance, Instances}
 
@@ -17,7 +17,7 @@ class Weka(dataname: String, sizeFeature: Int, labels: JList[String], filename: 
     val attrs = new ArrayBuffer[Attribute]
     attrs ++= (1 to sizeFeature).map(x => new Attribute(x.asStr))
     attrs += new Attribute("label", labels)
-    val data = new Instances(dataname, new AList[Attribute](attrs), 0)
+    val data = new Instances(dataname, new JArrayList[Attribute](attrs), 0)
     data.setClassIndex(attrs.size - 1)
     data
   }

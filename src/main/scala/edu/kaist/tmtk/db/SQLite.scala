@@ -10,18 +10,15 @@ import resource.managed
 
 import scala.collection.JavaConversions._
 
-class MySQL(path: String, var table: String = null, var schema: String = null, user: String = null, pswd: String = null, reset: Boolean = false, lv: AnyRef = "I") extends Closeable {
-  private val Array(host, name) = path.split("/", 2)
-  val connection = DriverManager.getConnection(s"jdbc:mysql://$host", user, pswd)
+class SQLite(path: String, var table: String = null, var schema: String = null, reset: Boolean = false, lv: AnyRef = "I") extends Closeable {
+  val connection = DriverManager.getConnection(s"jdbc:sqlite:$path")
   val session = connection.createStatement()
-  session.execute(s"CREATE DATABASE IF NOT EXISTS $name DEFAULT CHARACTER SET utf8")
-  session.execute(s"USE $name")
   if (table != null && schema != null)
     create(schema)
   lazy val runner = new QueryRunner
   log(s"[DONE] Connect $this", lv)
 
-  override def toString = s"MySQL($host/$name/${table.asStr("")})"
+  override def toString = s"SQLite($path/${table.asStr("")})"
 
   override def close() = connection.close()
 
@@ -49,7 +46,7 @@ class MySQL(path: String, var table: String = null, var schema: String = null, u
   def size = count(this.table)
 
   def count(query: String, args: Any*) =
-    runner.query(connection, "SELECT COUNT(*) FROM " + query, new ScalarHandler[Long], args.map(_.asInstanceOf[AnyRef]): _*)
+    runner.query(connection, "SELECT COUNT(*) FROM " + query, new ScalarHandler[Int], args.map(_.asInstanceOf[AnyRef]): _*)
 
   def one(query: String, args: Any*) =
     runner.query(connection, query, new ScalarHandler[AnyRef], args.map(_.asInstanceOf[AnyRef]): _*)

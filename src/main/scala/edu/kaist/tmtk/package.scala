@@ -2,26 +2,39 @@ package edu.kaist
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, PrintStream}
 import java.lang.Thread.sleep
-import java.net.{Socket => JSocket, URI}
+import java.net.{URI, Socket => JSocket}
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
-import java.security.AccessController
+import java.security.{AccessController, MessageDigest}
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, LocalDateTime, ZoneId}
 import java.util.Properties
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
+import com.google.gson.Gson
 import edu.kaist.tmtk.db.MySQL
-import org.apache.log4j.Level.{DEBUG, ERROR, FATAL, INFO, TRACE, WARN}
+import org.apache.log4j.Level._
 import org.apache.log4j.{Level, LogManager, Logger, PropertyConfigurator}
+import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.Cell._
+import resource.{ManagedResource, managed}
 import sun.security.action.GetPropertyAction
 
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.JavaConversions._
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.{Map, Seq, Set}
 import scala.tools.nsc.io.Socket
 
 package object tmtk {
+  type JList[E] = java.util.List[E]
+  type JMap[K, V] = java.util.Map[K, V]
+  type JSet[E] = java.util.Set[E]
+  type AMap[A, B] = scala.collection.Map[A, B]
+  type XMap[A, B] = scala.collection.mutable.LinkedHashMap[A, B]
+  val AMap = scala.collection.Map
+  val XMap = scala.collection.mutable.LinkedHashMap
 
   implicit class ArrayOps[A](a: Array[A]) {
     def at(i: Int): Option[A] =
@@ -32,21 +45,6 @@ package object tmtk {
   }
 
   implicit class AsValue(a: Any) {
-    def asStr(default: String = null): String = try {
-      a match {
-        case null => default
-        case x: String => x
-        case x: AnyRef => String.valueOf(x)
-        case _ => default
-      }
-    } catch {
-      case e: Throwable =>
-        warn(s">> Exception due to: ${e.getClass.getSimpleName}: ${".".r.findAllIn(e.getMessage).mkString}")
-        default
-    }
-
-    def asStr: String = asStr()
-
     def asInt(default: Int = -1): Int = try {
       a match {
         case null => default
@@ -164,9 +162,71 @@ package object tmtk {
     }
 
     def asBoolean: Boolean = asBoolean()
+
+    def asStr(default: String = null): String = try {
+      a match {
+        case null => default
+        case x: String => x
+        case x: AnyRef => String.valueOf(x)
+        case _ => default
+      }
+    } catch {
+      case e: Throwable =>
+        warn(s">> Exception due to: ${e.getClass.getSimpleName}: ${".".r.findAllIn(e.getMessage).mkString}")
+        default
+    }
+
+    def asStr: String = asStr()
+
+    def asJObj = {
+      a match {
+        case x: Seq[_] => seqAsJavaList(x)
+        case x: Set[_] => setAsJavaSet(x)
+        case x: Map[_, _] => mapAsJavaMap(x)
+        case _ => a.asInstanceOf[AnyRef]
+      }
+    }
+
+    def asJList[A] = {
+      a match {
+        case x: Seq[_] => seqAsJavaList(x.asInstanceOf[Seq[A]])
+        case _ => null
+      }
+    }
+
+    def asJMap[A, B] = {
+      a match {
+        case x: AMap[_, _] => mapAsJavaMap(x.asInstanceOf[AMap[A, B]])
+        case _ => null
+      }
+    }
+
+    def asJson = {
+      a match {
+        case x: Seq[_] => new Gson().toJson(x.asJList)
+        case x: AMap[_, _] => new Gson().toJson(x.asJMap)
+        case x: AnyRef => new Gson().toJson(x)
+        case _ => null
+      }
+    }
   }
 
-  def toJavaList[A](a: A) = seqAsJavaList(Seq(a))
+  implicit class AsCellValue(c: Cell) {
+    def asAny = {
+      if (c != null)
+        c.getCellType match {
+          case CELL_TYPE_STRING => c.getRichStringCellValue.toString
+          case CELL_TYPE_NUMERIC => c.getNumericCellValue
+          case CELL_TYPE_BOOLEAN => c.getBooleanCellValue
+          case _ => null
+        }
+      else null
+    }
+  }
+
+  def addToJavaList[A](a: A*) = seqAsJavaList(a.toSeq)
+
+  def addToJavaMap[A, B](a: A, b: B) = mapAsJavaMap(Map(a -> b))
 
   def method: String = method(3)
 
@@ -282,15 +342,15 @@ package object tmtk {
 
   val clocks = new TrieMap[String, Instant]
 
-  def init(key: String = method(4), lv: AnyRef = WARN, marker: String = "[INIT]", lg: Logger = logger) = {
+  def init(key: String = method(4), msg: String = "", lv: AnyRef = WARN, marker: String = "[INIT]", lg: Logger = logger) = {
     clocks += key -> Instant.now
-    log(s"$marker $key", lv, lg)
+    log(s"$marker $key$msg", lv, lg)
   }
 
-  def exit(key: String = method(4), post: String = "", lv: AnyRef = WARN, marker: String = "[EXIT]", lg: Logger = logger) = {
+  def exit(key: String = method(4), msg: String = "", lv: AnyRef = WARN, marker: String = "[EXIT]", lg: Logger = logger) = {
     if (clocks.contains(key)) {
       val from = clocks(key)
-      log(s"$marker $key in ${elapsed(from)}$post", lv, lg)
+      log(s"$marker $key$msg / time=${elapsed(from)}", lv, lg)
       clocks -= key
     }
   }
@@ -298,7 +358,7 @@ package object tmtk {
   def test(name: String = method(3), f: () => Any = null, logfile: String = null, initM: String = "[INIT]", exitM: String = "[EXIT]") = {
     if (logfile != null)
       changeLogfile(logfile)
-    init(name, "W", initM)
+    init(name, "", "W", initM)
     val r = if (f != null) f() else null
     exit(name, "", "W", exitM)
     r
@@ -333,58 +393,89 @@ package object tmtk {
   def toItems(values: Array[String], sep: String = "=") =
     values.map(_.split(sep, 2)).filter(_.length >= 2).map(x => (x.head, x.last))
 
-  def connect(host: String, port: Int, second: Int = 0) = try {
-    pause(() => new Socket(new JSocket(host, port)), second)
+  def socket(host: String, port: Int) = try {
+    new Socket(new JSocket(host, port))
   } catch {
-    case e: Throwable => null
+    case e: Throwable => info(s"($host:$port) ${e.getMessage}"); null
   }
 
-  def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 10 #:: 20 #:: Stream(30)) =
+  def hash(text: String) =
+    MessageDigest.getInstance("SHA-1").digest(text.getBytes("UTF-8")).map("%02x".format(_)).mkString
+
+  def connect(host: String, port: Int): ManagedResource[Socket] =
+    Option(socket(host, port)).filter(_ != null).map(managed(_)).orNull
+
+  def connect(host: String, port: Int, second: Int): ManagedResource[Socket] =
+    pause(() => connect(host, port), second)
+
+  def connectable(host: String, port: Int): Boolean = {
+    val connected = connect(host, port)
+    if (connected != null) {
+      for (c <- connected)
+        c.close()
+      true
+    } else false
+  }
+
+  def connectable(host: String, port: Int, second: Int): Boolean =
+    pause(() => connectable(host, port), second)
+
+  def reconnectable(host: String, port: Int, seconds: Stream[Int] = 0 #:: 1 #:: 2 #:: 3 #:: Stream(4)): Boolean =
+    seconds.map(connectable(host, port, _)).dropWhile(_ == false).headOption.getOrElse(false)
+
+  def reconnect(host: String, port: Int, seconds: Stream[Int] = 0 #:: 1 #:: 2 #:: 3 #:: Stream(4)) =
     seconds.map(connect(host, port, _)).dropWhile(_ == null).headOption.orNull
 
-  def assign[D](ds: Iterable[D], f: (D, ArrayBuffer[String]) => Any, multi: Int = 1, interval: Int = 1, offset: Long = 0, initM: String = "[INIT]", exitM: String = "[EXIT]") = {
-    val (sleepTimeNext, sleepTimeLast) = (0, 0)
-    val (numInit, numDone) = (new AtomicLong(offset), new AtomicLong)
-    val jobs = new TrieMap[String, Thread]
+  val sleepTimeLast = 100
 
-    for (d <- ds) {
+  def assign[D](ds: TraversableOnce[D], f1: (D) => Any = null, f2: (D, ArrayBuffer[String]) => Any = null, multi: Int = 1, interval: Int = 1, offset: Long = 0, initM: String = null, exitM: String = "[EXIT]", m: (D, ArrayBuffer[String]) => Any = null): Long = {
+    val (numInit, numDone) = (new AtomicLong(offset), new AtomicLong)
+    val jobs = new ArrayBlockingQueue[Thread](multi)
+
+    for (d <- ds)
       if (multi <= 1)
         handle1(d)
       else
         handle2(d)
-    }
-    while (jobs.nonEmpty)
-      Thread.sleep(sleepTimeLast)
 
-    def done = if (numDone.incrementAndGet % interval == 0) "W" else "D"
+    def initL = if (initM != null && numInit.get % interval == 0) "W" else "X"
+    def exitL = if (numDone.incrementAndGet % interval == 0) "W" else "D"
     def name(n: Long) = "J%010d" format n
     def str(ms: ArrayBuffer[String]) = if (ms.nonEmpty) s" / ${ms.mkString(" / ")}" else ""
 
     def handle1(d: D, n: String = name(numInit.incrementAndGet)) {
       val ms = new ArrayBuffer[String]
-      init(n, "D", initM)
-      f(d, ms)
-      exit(n, str(ms), done, exitM)
+      if (m != null)
+        m(d, ms)
+      init(n, str(ms), initL, initM)
+      if (f2 != null)
+        f2(d, ms)
+      else
+        f1(d)
+      exit(n, str(ms), exitL, exitM)
     }
 
     def handle2(d: D, n: String = name(numInit.incrementAndGet)) {
       val ms = new ArrayBuffer[String]
-      while (jobs.size >= multi)
-        Thread.sleep(sleepTimeNext)
-      jobs.synchronized {
-        jobs += n -> new Thread(new Runnable {
-          override def run(): Unit = {
-            init(n, "D", initM)
-            f(d, ms)
-            exit(n, str(ms), done, exitM)
-            jobs.synchronized(jobs -= n)
-            //jobs -= n
-          }
-        })
-      }
-      jobs(n).start()
+      val job = new Thread(new Runnable {
+        override def run(): Unit = {
+          if (m != null)
+            m(d, ms)
+          init(n, str(ms), initL, initM)
+          if (f2 != null)
+            f2(d, ms)
+          else
+            f1(d)
+          exit(n, str(ms), exitL, exitM)
+          jobs.take()
+        }
+      })
+      jobs.put(job)
+      job.start()
     }
 
+    while (jobs.size > 0)
+      Thread.sleep(sleepTimeLast)
     numDone.get
   }
 
@@ -397,7 +488,7 @@ package object tmtk {
 
   def testAssign() = test(method, () => {
     val data = Stream.iterate(1)(x => x + 1).take(100)
-    val out = new MySQL("chrisjihee:jiheeryu@143.248.48.105/unit", "assigner", "i int auto_increment, t timestamp default current_timestamp, data int, conf varchar(50), result int, primary key(i)")
+    val out = new MySQL("143.248.48.105/unit", "assigner", "i int auto_increment, t timestamp default current_timestamp, data int, conf varchar(50), result int, primary key(i)", "chrisjihee", "jiheeryu")
     val conf = new ArrayBuffer[String]
 
     conf += "multi=1"
@@ -420,7 +511,7 @@ package object tmtk {
     warn(s"[DONE] process $done4 numbers")
     conf.clear
 
-    def square(d: Int, post: ArrayBuffer[String]) = {
+    def square(d: Int) = {
       val result = d * d
       out.insert(Map("data" -> d, "conf" -> conf.mkString(" / "), "result" -> result))
     }
